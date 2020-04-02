@@ -1,10 +1,13 @@
 package ua.ali_x.telegrambot.schedule;
 
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ua.ali_x.telegrambot.service.ScheduleService;
+import ua.ali_x.telegrambot.service.StatisticService;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -16,15 +19,27 @@ import java.time.Duration;
 @Component
 public class StatisticJob implements Job {
 
+    public static StatisticJob instance;
+    @Autowired
+    private ScheduleService scheduleService;
+    @Autowired
+    private StatisticService statisticService;
+    @Value("${token}")
+    private String token;
+
+    public StatisticJob() {
+        if (instance == null) {
+            instance = this;
+        }
+    }
+
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
+        String statistics = instance.statisticService.getStatistics();
 
-        long chatId = dataMap.getLong("chatId");
-        String message = dataMap.getString("message");
-        String token = dataMap.getString("token");
-
-        sendStatistic(chatId, message, token);
+        instance.scheduleService.getAllEnabledUser().forEach(schedule -> {
+            sendStatistic(schedule.getChatId(), statistics, instance.token);
+        });
 
         System.out.println("Job " + this.getClass().getName() + " is executed");
     }
