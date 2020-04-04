@@ -1,10 +1,8 @@
 package ua.ali_x.telegrambot.service;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 
@@ -13,9 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 @Component
 public class StatisticService {
@@ -26,37 +21,19 @@ public class StatisticService {
     public String getStatistics() {
         String message = messageTemplateDao.findFirstByCode("statistic").getMessage();
 
-        String dateNow = new SimpleDateFormat("M/dd/yy").format(new Date());
-        String dateYesterday = new SimpleDateFormat("M/dd/yy").format(yesterday());
-        String datesPathTemplate = "$.data[?(@.['Country/Region']=='Ukraine')].dates[?(@.date=='%s')]";
-        String datesPath;
+        String basePath = "$.countries.UA";
 
-        String url = "https://api.the2019ncov.com/api/cases";
-        JSONObject responseJson = sendGET(url);
-        String responseString = responseJson.toString();
+        String url = "https://www.covidvisualizer.com/api";
+        DocumentContext responseJson = sendGET(url);
 
-        datesPath = String.format(datesPathTemplate, dateNow);
+        Integer recovered = responseJson.read(basePath + ".recovered");
+        Integer death = responseJson.read(basePath + ".deaths");
+        Integer reports = responseJson.read(basePath + ".reports");
 
-        if (((JSONArray) JsonPath.parse(responseString).read(datesPath)).isEmpty()) {
-            datesPath = String.format(datesPathTemplate, dateYesterday);
-        }
-
-        String dateStr = (String) ((JSONArray) JsonPath.parse(responseString).read(datesPath + ".date")).get(0);
-        Integer recovered = (Integer) ((JSONArray) JsonPath.parse(responseString).read(datesPath + ".recovered")).get(0);
-        Integer death = (Integer) ((JSONArray) JsonPath.parse(responseString).read(datesPath + ".death")).get(0);
-        Integer confirmed = (Integer) ((JSONArray) JsonPath.parse(responseString).read(datesPath + ".confirmed")).get(0);
-
-        return String.format(message, dateStr, confirmed, recovered, death);
+        return String.format(message, reports, recovered, death);
     }
 
-    private Date yesterday() {
-        final Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, -1);
-        return cal.getTime();
-    }
-
-
-    private JSONObject sendGET(String url) {
+    private DocumentContext sendGET(String url) {
         try {
             URL obj = new URL(url);
 
@@ -75,7 +52,7 @@ public class StatisticService {
                 }
                 in.close();
 
-                return new JSONObject(response.toString());
+                return JsonPath.parse(response.toString());
             } else {
                 System.out.println("GET request not worked");
             }
@@ -83,7 +60,7 @@ public class StatisticService {
             e.printStackTrace();
         }
 
-        return new JSONObject("{}");
+        return JsonPath.parse("{}");
     }
 
 }

@@ -8,13 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.service.ScheduleService;
 import ua.ali_x.telegrambot.service.StatisticService;
-
-import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import ua.ali_x.telegrambot.service.TelegramService;
 
 @Component
 public class StatisticJob implements Job {
@@ -24,6 +18,9 @@ public class StatisticJob implements Job {
     private ScheduleService scheduleService;
     @Autowired
     private StatisticService statisticService;
+    @Autowired
+    private TelegramService telegramService;
+
     @Value("${token}")
     private String token;
 
@@ -38,42 +35,11 @@ public class StatisticJob implements Job {
         String statistics = instance.statisticService.getStatistics();
 
         instance.scheduleService.getAllEnabledUser().forEach(schedule -> {
-            sendStatistic(schedule.getChatId(), statistics, instance.token);
+            instance.telegramService.sendStatistic(schedule.getChatId(), statistics, instance.token);
         });
 
-        System.out.println("Job " + this.getClass().getName() + " is executed");
+        System.out.println("Job " + this.getClass().getSimpleName() + " is executed");
     }
 
-    public void sendStatistic(long chatId, String message, String token) {
-        try {
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(5))
-                    .version(HttpClient.Version.HTTP_2)
-                    .build();
 
-            UriBuilder builder = UriBuilder
-                    .fromUri("https://api.telegram.org")
-                    .path("/{token}/sendMessage")
-                    .queryParam("chat_id", chatId)
-                    .queryParam("text", message);
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .GET()
-                    .uri(builder.build("bot" + token))
-                    .timeout(Duration.ofSeconds(5))
-                    .build();
-
-            HttpResponse<String> response = null;
-
-
-            response = client
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-
-
-            System.out.println(response.statusCode());
-            System.out.println(response.body());
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -1,8 +1,5 @@
 package ua.ali_x.telegrambot.handlers;
 
-import com.jayway.jsonpath.JsonPath;
-import net.minidev.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,21 +8,14 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.dao.ScheduleDao;
+import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.StatisticService;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 @Component
 public class MyBot extends TelegramLongPollingBot {
@@ -111,8 +101,6 @@ public class MyBot extends TelegramLongPollingBot {
 
         return response;
     }
-
-
 
     @Override
     public String getBotUsername() {
