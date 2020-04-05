@@ -78,6 +78,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         String userResponse = message.getText();
 
         response.setChatId(message.getChatId());
+
         registerNewUser(message);
 
         switch (userResponse) {

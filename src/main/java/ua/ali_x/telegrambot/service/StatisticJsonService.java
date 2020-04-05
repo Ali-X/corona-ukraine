@@ -41,7 +41,7 @@ public class StatisticJsonService {
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("GET");
             int responseCode = con.getResponseCode();
-            System.out.println("GET Response Code :: " + responseCode + " :: url");
+            System.out.println("GET Response Code :: " + responseCode + " :: " + url);
             if (responseCode == HttpURLConnection.HTTP_OK) { // success
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         con.getInputStream()));
