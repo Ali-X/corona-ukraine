@@ -2,13 +2,15 @@ package ua.ali_x.telegrambot.schedule;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.ScheduleService;
-import ua.ali_x.telegrambot.service.StatisticService;
+import ua.ali_x.telegrambot.service.StatisticJsonService;
 import ua.ali_x.telegrambot.service.TelegramService;
+
+import java.util.List;
 
 @Component
 public class StatisticJob implements Job {
@@ -17,7 +19,7 @@ public class StatisticJob implements Job {
     @Autowired
     private ScheduleService scheduleService;
     @Autowired
-    private StatisticService statisticService;
+    private StatisticJsonService statisticJsonService;
     @Autowired
     private TelegramService telegramService;
 
@@ -31,14 +33,18 @@ public class StatisticJob implements Job {
     }
 
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        String statistics = instance.statisticService.getStatistics();
+    public void execute(JobExecutionContext jobExecutionContext) {
+        List<Schedule> allEnabledUser = instance.scheduleService.getAllEnabledUser();
 
-        instance.scheduleService.getAllEnabledUser().forEach(schedule -> {
-            instance.telegramService.sendStatistic(schedule.getChatId(), statistics, instance.token);
-        });
+        if (!allEnabledUser.isEmpty()) {
+            String statistics = instance.statisticJsonService.getStatistics();
 
-        System.out.println("Job " + this.getClass().getSimpleName() + " is executed");
+            allEnabledUser.forEach(schedule -> {
+                instance.telegramService.sendStatistic(schedule.getChatId(), statistics, instance.token);
+            });
+
+            System.out.println("Job " + this.getClass().getSimpleName() + " is executed");
+        }
     }
 
 

@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import ua.ali_x.telegrambot.handlers.MyBot;
+import ua.ali_x.telegrambot.bot.CoronaUkraineBot;
 import ua.ali_x.telegrambot.schedule.SchedulerService;
 
 @SpringBootApplication
@@ -25,7 +25,7 @@ public class TelegrambotApplication implements CommandLineRunner {
     }
 
     @Autowired
-    private MyBot bot;
+    private CoronaUkraineBot bot;
 
     @Autowired
     private SchedulerService schedulerService;
