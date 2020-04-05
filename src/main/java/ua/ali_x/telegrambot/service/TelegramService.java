@@ -12,7 +12,7 @@ import java.time.Duration;
 @Component
 public class TelegramService {
 
-    public void sendStatistic(long chatId, String message, String token) {
+    public void sendMessage(long chatId, String message, String token) {
         try {
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(5))

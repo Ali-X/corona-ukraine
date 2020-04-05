@@ -12,8 +12,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ua.ali_x.telegrambot.dao.FeedbackDao;
+import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import ua.ali_x.telegrambot.dao.ScheduleDao;
+import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
+import ua.ali_x.telegrambot.service.QuarantineService;
 import ua.ali_x.telegrambot.service.StatisticHtmlService;
 import ua.ali_x.telegrambot.service.StatisticJsonService;
 
@@ -27,14 +31,28 @@ import java.util.List;
 @Component
 public class CoronaUkraineBot extends TelegramLongPollingBot {
 
+    public static final String STATISTIC_QUESTION = "Яка зараз статистика?";
+    public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
+    public static final String FEEDBACK_QUESTION = "Як залишити відгук?";
+    public static final String FEEDBACK_ANSWER_START = "відгук";
+
     @Autowired
     private ScheduleDao scheduleDao;
+
+    @Autowired
+    private MessageTemplateDao messageTemplateDao;
 
     @Autowired
     private StatisticJsonService statisticJsonService;
 
     @Autowired
     private StatisticHtmlService statisticHtmlService;
+
+    @Autowired
+    private QuarantineService quarantineService;
+
+    @Autowired
+    private FeedbackDao feedbackDao;
 
     @Value("${botname}")
     private String botname;
@@ -50,9 +68,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
             SendMessage response = fetchUserResponse(message);
 
-            if (StringUtils.isNoneBlank(response.getText())) {
-                execute(response);
+            if (StringUtils.isEmpty(response.getText())) {
+                response.setText(messageTemplateDao.findFirstByCode("wrong_request").getMessage());
             }
+
+            execute(response);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -87,8 +107,18 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setButtons(response);
                 break;
             }
-            case "Переглянути статистику": {
+            case STATISTIC_QUESTION: {
                 getStatisticsResponseText(response);
+                setButtons(response);
+                break;
+            }
+            case QUARANTINE_QUESTION: {
+                getDaysLeftResponseText(response);
+                setButtons(response);
+                break;
+            }
+            case FEEDBACK_QUESTION: {
+                getFeedbackQuestionText(response);
                 setButtons(response);
                 break;
             }
@@ -97,34 +127,60 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 break;
         }
 
+        if (StringUtils.startsWithIgnoreCase(userResponse, FEEDBACK_ANSWER_START)) {
+            saveFeedback(message);
+            getFeedbackAnswerText(response);
+        }
+
         return response;
     }
 
+    private void saveFeedback(Message message) {
+        String messageText = message.getText();
+
+        if (StringUtils.isNoneBlank(messageText)) {
+            Feedback feedback = new Feedback();
+            feedback.setFeedback(messageText);
+            feedback.setUsername(message.getFrom().getUserName());
+
+            feedbackDao.save(feedback);
+        }
+    }
+
+    private void getFeedbackQuestionText(SendMessage response) {
+        response.setText("Щоб залишити відгук, почніть своє повідомлення зі слова \"Відгук\". \nНаприклад: \"Відгук: Дуже класний бот!\"");
+    }
+
+    private void getFeedbackAnswerText(SendMessage response) {
+        response.setText("Ваш відгук збережено! Дякую!");
+    }
+
+    private void getDaysLeftResponseText(SendMessage response) {
+        response.setText(quarantineService.getDaysLeftMessage());
+    }
+
     public synchronized void setButtons(SendMessage sendMessage) {
-        // Создаем клавиуатуру
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         replyKeyboardMarkup.setSelective(false);
         replyKeyboardMarkup.setResizeKeyboard(true);
         replyKeyboardMarkup.setOneTimeKeyboard(false);
 
-        // Создаем список строк клавиатуры
         List<KeyboardRow> keyboard = new ArrayList<>();
 
-        // Первая строчка клавиатуры
         KeyboardRow keyboardFirstRow = new KeyboardRow();
-        // Добавляем кнопки в первую строчку клавиатуры
-        keyboardFirstRow.add(new KeyboardButton("Переглянути статистику"));
+        keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION));
 
-      /*  // Вторая строчка клавиатуры
         KeyboardRow keyboardSecondRow = new KeyboardRow();
-        // Добавляем кнопки во вторую строчку клавиатуры
-        keyboardSecondRow.add(new KeyboardButton(“Помощь”);
-*/
-        // Добавляем все строчки клавиатуры в список
+        keyboardSecondRow.add(new KeyboardButton(QUARANTINE_QUESTION));
+
+        KeyboardRow keyboardThirdRow = new KeyboardRow();
+        keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
+
         keyboard.add(keyboardFirstRow);
-//        keyboard.add(keyboardSecondRow);
-        // и устанваливаем этот список нашей клавиатуре
+        keyboard.add(keyboardSecondRow);
+        keyboard.add(keyboardThirdRow);
+
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
 
@@ -138,7 +194,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
             Schedule scheduleObj = new Schedule();
             scheduleObj.setChatId(message.getChatId());
             scheduleObj.setName(message.getFrom().getUserName());
-            scheduleObj.setCron("0 0/1 * 1/1 * ?");
+            scheduleObj.setCron("0 0 11 1/1 * ? *");
             scheduleObj.setEnabled(true);
 
             scheduleDao.save(scheduleObj);
