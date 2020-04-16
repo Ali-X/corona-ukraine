@@ -34,7 +34,9 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String STATISTIC_QUESTION = "Яка зараз статистика?";
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
     public static final String FEEDBACK_QUESTION = "Як залишити відгук?";
-    public static final String FEEDBACK_ANSWER_START = "відгук";
+    public static final String FEEDBACK_ANSWER_START_UA = "відгук";
+    public static final String FEEDBACK_ANSWER_START_RU = "отзыв";
+    public static final String FEEDBACK_ANSWER_START_EN = "feedback";
 
     @Autowired
     private ScheduleDao scheduleDao;
@@ -127,7 +129,9 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 break;
         }
 
-        if (StringUtils.startsWithIgnoreCase(userResponse, FEEDBACK_ANSWER_START)) {
+        if (StringUtils.startsWithIgnoreCase(userResponse, FEEDBACK_ANSWER_START_UA)
+                || StringUtils.startsWithIgnoreCase(userResponse, FEEDBACK_ANSWER_START_RU)
+                || StringUtils.startsWithIgnoreCase(userResponse, FEEDBACK_ANSWER_START_EN)) {
             saveFeedback(message);
             getFeedbackAnswerText(response);
         }
@@ -148,11 +152,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void getFeedbackQuestionText(SendMessage response) {
-        response.setText("Щоб залишити відгук, почніть своє повідомлення зі слова \"Відгук\". \nНаприклад: \"Відгук: Дуже класний бот!\"");
+        response.setText(messageTemplateDao.findFirstByCode("feedback_question").getMessage());
     }
 
     private void getFeedbackAnswerText(SendMessage response) {
-        response.setText("Ваш відгук збережено! Дякую!");
+        response.setText(messageTemplateDao.findFirstByCode("feedback_answer").getMessage());
     }
 
     private void getDaysLeftResponseText(SendMessage response) {
@@ -194,7 +198,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
             Schedule scheduleObj = new Schedule();
             scheduleObj.setChatId(message.getChatId());
             scheduleObj.setName(message.getFrom().getUserName());
-            scheduleObj.setCron("0 0 11 1/1 * ? *");
+            scheduleObj.setCron("0 0 10 1/1 * ? *");
             scheduleObj.setEnabled(true);
 
             scheduleDao.save(scheduleObj);

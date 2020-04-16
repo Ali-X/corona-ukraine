@@ -57,7 +57,7 @@ public class StatisticHtmlService {
                 return StringUtils.EMPTY;
             }
 
-            return String.format(message, Integer.valueOf(infected), Integer.valueOf(recovered), Integer.valueOf(death));
+            return String.format(message, infected, recovered, death);
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
             return StringUtils.EMPTY;
