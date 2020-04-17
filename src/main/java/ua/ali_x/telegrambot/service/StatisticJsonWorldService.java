@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class StatisticJsonWorldService {
 
-    private final List<String> countries = Arrays.asList("Китай", "Италия", "Испания", "Германия", "США", "Польша", "Россия", "ОАЭ", "Египет", "Южная Корея", "Франция", "Великобритания", "Япония", "Канада", "Австралия", "Португалия", "Израиль");
+    private final List<String> countries = Arrays.asList("Китай", "Италия", "Испания", "Германия", "США", "Польша", "Россия", "ОАЭ", "Египет", "Южная Корея", "Франция", "Япония", "Канада", "Австралия", "Португалия", "Израиль");
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
