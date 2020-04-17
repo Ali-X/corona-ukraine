@@ -23,6 +23,9 @@ public class StatisticJsonWorldService {
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
+    @Autowired
+    private TranslationService translationService;
+
     public String getStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
         String message = messageTemplateDao.findFirstByCode("statistic_world_d").getMessage();
@@ -38,6 +41,7 @@ public class StatisticJsonWorldService {
             String country = (String) ((JSONArray) JsonPath.read(o, ".name_en")).get(0);
 
             if (countries.contains(country)) {
+                country = translationService.findUkrByRus(country);
                 Integer allCases = parseValue(((JSONArray) JsonPath.read(o, ".total_cases")).get(0));
                 Integer recovered = parseValue(((JSONArray) JsonPath.read(o, ".total_recovered")).get(0));
                 Integer death = parseValue(((JSONArray) JsonPath.read(o, ".total_deaths")).get(0));
