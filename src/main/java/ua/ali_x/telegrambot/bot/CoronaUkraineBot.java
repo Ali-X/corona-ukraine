@@ -18,8 +18,9 @@ import ua.ali_x.telegrambot.dao.ScheduleDao;
 import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.QuarantineService;
-import ua.ali_x.telegrambot.service.StatisticHtmlService;
-import ua.ali_x.telegrambot.service.StatisticJsonService;
+import ua.ali_x.telegrambot.service.StatisticHtmlUkraineService;
+import ua.ali_x.telegrambot.service.StatisticJsonUkraineService;
+import ua.ali_x.telegrambot.service.StatisticJsonWorldService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,7 +32,8 @@ import java.util.List;
 @Component
 public class CoronaUkraineBot extends TelegramLongPollingBot {
 
-    public static final String STATISTIC_QUESTION = "Яка зараз статистика?";
+    public static final String STATISTIC_QUESTION_UKRAINE = "Яка статистика в Україні?";
+    public static final String STATISTIC_QUESTION_WORLD = "Яка статистика в світі?";
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
     public static final String FEEDBACK_QUESTION = "Як залишити відгук?";
     public static final String FEEDBACK_ANSWER_START_UA = "відгук";
@@ -45,10 +47,13 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private MessageTemplateDao messageTemplateDao;
 
     @Autowired
-    private StatisticJsonService statisticJsonService;
+    private StatisticJsonUkraineService statisticJsonUkraineService;
 
     @Autowired
-    private StatisticHtmlService statisticHtmlService;
+    private StatisticHtmlUkraineService statisticHtmlUkraineService;
+
+    @Autowired
+    private StatisticJsonWorldService statisticJsonWorldService;
 
     @Autowired
     private QuarantineService quarantineService;
@@ -109,12 +114,18 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setButtons(response);
                 break;
             }
-            case STATISTIC_QUESTION: {
-                getStatisticsResponseText(response);
+            case STATISTIC_QUESTION_UKRAINE: {
+                getStatisticsUkraineResponseText(response);
                 setButtons(response);
                 break;
             }
-            case QUARANTINE_QUESTION: {
+            case STATISTIC_QUESTION_WORLD: {
+                getStatisticsWorldResponseText(response);
+                setButtons(response);
+                break;
+            }
+
+                case QUARANTINE_QUESTION: {
                 getDaysLeftResponseText(response);
                 setButtons(response);
                 break;
@@ -173,17 +184,15 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         List<KeyboardRow> keyboard = new ArrayList<>();
 
         KeyboardRow keyboardFirstRow = new KeyboardRow();
-        keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION));
+        keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_UKRAINE));
+        keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_WORLD));
 
         KeyboardRow keyboardSecondRow = new KeyboardRow();
         keyboardSecondRow.add(new KeyboardButton(QUARANTINE_QUESTION));
-
-        KeyboardRow keyboardThirdRow = new KeyboardRow();
         keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
 
         keyboard.add(keyboardFirstRow);
         keyboard.add(keyboardSecondRow);
-        keyboard.add(keyboardThirdRow);
 
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
@@ -205,13 +214,21 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         }
     }
 
-    private void getStatisticsResponseText(SendMessage response) {
-        String statistics = statisticHtmlService.getStatistics();
+    private void getStatisticsUkraineResponseText(SendMessage response) {
+        String statistics = statisticHtmlUkraineService.getStatistics();
 
         if (StringUtils.isEmpty(statistics)) {
-            statistics = statisticJsonService.getStatistics();
+            statistics = statisticJsonUkraineService.getStatistics();
         }
 
+        response.setText(statistics);
+    }
+
+    private void getStatisticsWorldResponseText(SendMessage response) {
+        String statistics = statisticJsonWorldService.getStatistics();
+
+//        response.setText("Скоро буде!");
+        response.setParseMode("HTML");
         response.setText(statistics);
     }
 

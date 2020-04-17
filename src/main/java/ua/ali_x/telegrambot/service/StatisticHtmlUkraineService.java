@@ -12,14 +12,14 @@ import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import java.io.IOException;
 
 @Component
-public class StatisticHtmlService {
+public class StatisticHtmlUkraineService {
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
     public String getStatistics() {
         try {
-            String message = messageTemplateDao.findFirstByCode("statistic").getMessage();
+            String message = messageTemplateDao.findFirstByCode("statistic_ukraine_s").getMessage();
 
             String recovered = "";
             String death = "";

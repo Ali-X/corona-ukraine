@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.service.QuarantineService;
-import ua.ali_x.telegrambot.service.StatisticHtmlService;
-import ua.ali_x.telegrambot.service.StatisticJsonService;
+import ua.ali_x.telegrambot.service.StatisticHtmlUkraineService;
+import ua.ali_x.telegrambot.service.StatisticJsonUkraineService;
 import ua.ali_x.telegrambot.service.TelegramService;
 
 @Component
@@ -17,9 +17,9 @@ public class StatisticJob implements Job {
 
     public static StatisticJob instance;
     @Autowired
-    private StatisticJsonService statisticJsonService;
+    private StatisticJsonUkraineService statisticJsonUkraineService;
     @Autowired
-    private StatisticHtmlService statisticHtmlService;
+    private StatisticHtmlUkraineService statisticHtmlUkraineService;
     @Autowired
     private TelegramService telegramService;
     @Autowired
@@ -39,10 +39,10 @@ public class StatisticJob implements Job {
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         long chatId = jobDataMap.getLong("chatId");
         String daysLeftMsg = instance.quarantineService.getDaysLeftMessage();
-        String statistics = instance.statisticHtmlService.getStatistics();
+        String statistics = instance.statisticHtmlUkraineService.getStatistics();
 
         if (StringUtils.isEmpty(statistics)) {
-            statistics = instance.statisticJsonService.getStatistics();
+            statistics = instance.statisticJsonUkraineService.getStatistics();
         }
 
         instance.telegramService.sendMessage(chatId, statistics, instance.token);
