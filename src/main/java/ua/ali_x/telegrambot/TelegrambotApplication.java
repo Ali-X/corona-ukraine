@@ -12,7 +12,6 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import ua.ali_x.telegrambot.bot.CoronaUkraineBot;
 import ua.ali_x.telegrambot.schedule.SchedulerService;
-import ua.ali_x.telegrambot.service.UpdateService;
 
 @SpringBootApplication
 @EntityScan
@@ -31,9 +30,6 @@ public class TelegrambotApplication implements CommandLineRunner {
     @Autowired
     private SchedulerService schedulerService;
 
-    @Autowired
-    private UpdateService updateService;
-
     public static void main(String[] args) {
         SpringApplication.run(TelegrambotApplication.class, args);
     }
@@ -44,6 +40,5 @@ public class TelegrambotApplication implements CommandLineRunner {
         telegramBotsApi.registerBot(bot);
 
         schedulerService.initSchedulers();
-        updateService.sendUpdateMessage(false, "Привіт! Ми оновилися. Тепер у нас є світова статистика. Клікай /start");
     }
 }

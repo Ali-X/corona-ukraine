@@ -20,13 +20,19 @@ public class UpdateService {
     @Value("${token}")
     private String token;
 
-    public void sendUpdateMessage(Boolean isEnabled, String message) {
-        if (isEnabled) {
+    public boolean sendUpdateMessage(long chatId, String message) {
+        if (chatId > 0) {
+            telegramService.sendMessage(chatId, message, token);
+
+            return Boolean.TRUE;
+        } else {
             List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
 
             allEnabledUser.forEach(schedule -> {
                 telegramService.sendMessage(schedule.getChatId(), message, token);
             });
+
+            return Boolean.TRUE;
         }
     }
 }
