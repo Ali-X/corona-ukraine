@@ -1,4 +1,4 @@
-package ua.ali_x.telegrambot.service;
+package ua.ali_x.telegrambot.service.statistic;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -12,54 +12,26 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
 
 @Component
-public class StatisticJsonWorldService {
-
-    private final List<String> countries = Arrays.asList("Китай", "Италия", "Испания", "Германия", "США", "Польша", "Россия", "ОАЭ", "Египет", "Южная Корея", "Франция", "Япония", "Канада", "Австралия", "Португалия", "Израиль");
+public class StatisticJsonUkraineService implements StatisticService {
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
-    @Autowired
-    private TranslationService translationService;
-
     public String getStatistics() {
-        StringBuilder stringBuilder = new StringBuilder();
-        String message = messageTemplateDao.findFirstByCode("statistic_world_d").getMessage();
+        String message = messageTemplateDao.findFirstByCode("statistic_ukraine_d").getMessage();
 
-        String basePath = "$.data";
+        String basePath = "$.data[?(@.name_en=='Украина')]";
 
         String url = "http://coronavirus19.com.ua/ajax/world-stat";
         DocumentContext responseJson = sendGET(url);
 
-        JSONArray jsonArray = responseJson.read(basePath, JSONArray.class);
+        Integer allCases = (Integer) responseJson.read(basePath + ".total_cases", JSONArray.class).get(0);
+        Integer recovered = (Integer) responseJson.read(basePath + ".total_recovered", JSONArray.class).get(0);
+        Integer death = (Integer) responseJson.read(basePath + ".total_deaths", JSONArray.class).get(0);
 
-        jsonArray.forEach(o -> {
-            String country = (String) ((JSONArray) JsonPath.read(o, ".name_en")).get(0);
-
-            if (countries.contains(country)) {
-                country = translationService.findUkrByRus(country);
-                Integer allCases = parseValue(((JSONArray) JsonPath.read(o, ".total_cases")).get(0));
-                Integer recovered = parseValue(((JSONArray) JsonPath.read(o, ".total_recovered")).get(0));
-                Integer death = parseValue(((JSONArray) JsonPath.read(o, ".total_deaths")).get(0));
-
-                stringBuilder.append(String.format(message, country, allCases, recovered, death));
-                stringBuilder.append("\n");
-            }
-        });
-
-        return stringBuilder.toString();
-    }
-
-    private Integer parseValue(Object valueObj) {
-        if (valueObj instanceof String) {
-            return Integer.valueOf((String) valueObj);
-        }
-
-        return (Integer) valueObj;
+        return String.format(message, allCases, recovered, death);
     }
 
     private DocumentContext sendGET(String url) {

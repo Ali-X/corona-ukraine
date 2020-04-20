@@ -5,21 +5,23 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.service.QuarantineService;
-import ua.ali_x.telegrambot.service.StatisticHtmlUkraineService;
-import ua.ali_x.telegrambot.service.StatisticJsonUkraineService;
 import ua.ali_x.telegrambot.service.TelegramService;
+import ua.ali_x.telegrambot.service.statistic.StatisticService;
 
 @Component
 public class StatisticJob implements Job {
 
     public static StatisticJob instance;
     @Autowired
-    private StatisticJsonUkraineService statisticJsonUkraineService;
+    @Qualifier("statisticJsonUkraineService")
+    private StatisticService statisticJsonUkraineService;
     @Autowired
-    private StatisticHtmlUkraineService statisticHtmlUkraineService;
+    @Qualifier("statisticHtmlUkraineService")
+    private StatisticService statisticHtmlUkraineService;
     @Autowired
     private TelegramService telegramService;
     @Autowired

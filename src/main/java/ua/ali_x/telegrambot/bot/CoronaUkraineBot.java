@@ -2,6 +2,7 @@ package ua.ali_x.telegrambot.bot;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -18,9 +19,7 @@ import ua.ali_x.telegrambot.dao.ScheduleDao;
 import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.QuarantineService;
-import ua.ali_x.telegrambot.service.StatisticHtmlUkraineService;
-import ua.ali_x.telegrambot.service.StatisticJsonUkraineService;
-import ua.ali_x.telegrambot.service.StatisticJsonWorldService;
+import ua.ali_x.telegrambot.service.statistic.StatisticService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -47,13 +46,16 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private MessageTemplateDao messageTemplateDao;
 
     @Autowired
-    private StatisticJsonUkraineService statisticJsonUkraineService;
+    @Qualifier("statisticJsonUkraineService")
+    private StatisticService statisticJsonUkraineService;
 
     @Autowired
-    private StatisticHtmlUkraineService statisticHtmlUkraineService;
+    @Qualifier("statisticHtmlUkraineService")
+    private StatisticService statisticHtmlUkraineService;
 
     @Autowired
-    private StatisticJsonWorldService statisticJsonWorldService;
+    @Qualifier("statisticJsonWorldService")
+    private StatisticService statisticJsonWorldService;
 
     @Autowired
     private QuarantineService quarantineService;
@@ -125,7 +127,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 break;
             }
 
-                case QUARANTINE_QUESTION: {
+            case QUARANTINE_QUESTION: {
                 getDaysLeftResponseText(response);
                 setButtons(response);
                 break;

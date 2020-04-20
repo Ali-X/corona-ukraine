@@ -1,4 +1,4 @@
-package ua.ali_x.telegrambot.service;
+package ua.ali_x.telegrambot.service.statistic;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -12,7 +12,7 @@ import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import java.io.IOException;
 
 @Component
-public class StatisticHtmlUkraineService {
+public class StatisticHtmlUkraineService implements StatisticService {
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
