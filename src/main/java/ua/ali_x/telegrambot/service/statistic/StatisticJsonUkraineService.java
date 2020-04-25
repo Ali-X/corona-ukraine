@@ -34,34 +34,5 @@ public class StatisticJsonUkraineService implements StatisticService {
         return String.format(message, allCases, recovered, death);
     }
 
-    private DocumentContext sendGET(String url) {
-        try {
-            URL obj = new URL(url);
-
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            System.out.println("GET Response Code :: " + responseCode + " :: " + url);
-            if (responseCode == HttpURLConnection.HTTP_OK) { // success
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                        con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
-
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
-
-                return JsonPath.parse(response.toString());
-            } else {
-                System.out.println("GET request not worked");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return JsonPath.parse("{}");
-    }
 
 }
