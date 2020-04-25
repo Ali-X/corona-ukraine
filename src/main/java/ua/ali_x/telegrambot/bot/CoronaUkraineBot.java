@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -163,6 +164,8 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
             Feedback feedback = new Feedback();
             feedback.setFeedback(messageText);
             feedback.setUsername(message.getFrom().getUserName());
+            feedback.setChatId(message.getChatId());
+            feedback.setDate(new Date());
 
             feedbackDao.save(feedback);
         }
