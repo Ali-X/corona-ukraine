@@ -31,6 +31,7 @@ public class TelegrambotApplication implements CommandLineRunner {
     private SchedulerService schedulerService;
 
     public static void main(String[] args) {
+        System.out.println(System.getenv() + "System printout ");
         SpringApplication.run(TelegrambotApplication.class, args);
     }
 
