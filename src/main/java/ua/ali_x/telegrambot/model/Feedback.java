@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.ws.rs.DefaultValue;
 import java.io.Serializable;
 import java.util.Date;
 

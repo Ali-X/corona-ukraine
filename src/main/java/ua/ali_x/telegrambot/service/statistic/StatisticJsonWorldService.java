@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import ua.ali_x.telegrambot.service.TranslationService;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,6 +26,7 @@ public class StatisticJsonWorldService implements StatisticService {
     public String getStatistics() {
         StringBuilder stringBuilder = new StringBuilder();
         String message = messageTemplateDao.findFirstByCode("statistic_world_d").getMessage();
+        String messageAll = messageTemplateDao.findFirstByCode("statistic_all_world_s").getMessage();
 
         String basePath = "$.data";
 
@@ -33,19 +35,30 @@ public class StatisticJsonWorldService implements StatisticService {
 
         JSONArray jsonArray = responseJson.read(basePath, JSONArray.class);
 
-        jsonArray.forEach(o -> {
+        BigDecimal totalCases = new BigDecimal(0);
+        BigDecimal totalRecovered = new BigDecimal(0);
+        BigDecimal totalDeath = new BigDecimal(0);
+
+        for (Object o : jsonArray) {
             String country = (String) ((JSONArray) JsonPath.read(o, ".name_en")).get(0);
+
+            Integer allCases = parseValue(((JSONArray) JsonPath.read(o, ".total_cases")).get(0));
+            Integer recovered = parseValue(((JSONArray) JsonPath.read(o, ".total_recovered")).get(0));
+            Integer death = parseValue(((JSONArray) JsonPath.read(o, ".total_deaths")).get(0));
+
+            totalCases = totalCases.add(new BigDecimal(allCases));
+            totalRecovered = totalRecovered.add(new BigDecimal(recovered));
+            totalDeath = totalDeath.add(new BigDecimal(death));
 
             if (countries.contains(country)) {
                 country = translationService.findUkrByRus(country);
-                Integer allCases = parseValue(((JSONArray) JsonPath.read(o, ".total_cases")).get(0));
-                Integer recovered = parseValue(((JSONArray) JsonPath.read(o, ".total_recovered")).get(0));
-                Integer death = parseValue(((JSONArray) JsonPath.read(o, ".total_deaths")).get(0));
-
                 stringBuilder.append(String.format(message, country, allCases, recovered, death));
                 stringBuilder.append("\n");
             }
-        });
+        }
+
+        stringBuilder.append("\n");
+        stringBuilder.append(String.format(messageAll, totalCases.toString(), totalRecovered.toString(), totalDeath.toString()));
 
         return stringBuilder.toString();
     }
