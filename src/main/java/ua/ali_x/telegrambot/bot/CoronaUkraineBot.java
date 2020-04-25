@@ -54,6 +54,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private StatisticService statisticHtmlUkraineService;
 
     @Autowired
+    @Qualifier("statisticJsonUkraineRegionService")
+    private StatisticService statisticJsonUkraineRegionService;
+
+    @Autowired
     @Qualifier("statisticJsonWorldService")
     private StatisticService statisticJsonWorldService;
 
@@ -217,19 +221,29 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void getStatisticsUkraineResponseText(SendMessage response) {
+        StringBuilder sb = new StringBuilder();
         String statistics = statisticHtmlUkraineService.getStatistics();
 
         if (StringUtils.isEmpty(statistics)) {
             statistics = statisticJsonUkraineService.getStatistics();
         }
 
-        response.setText(statistics);
+        sb.append(statistics);
+
+        String regionStatistic = statisticJsonUkraineRegionService.getStatistics();
+
+        if (StringUtils.isNoneBlank(regionStatistic)) {
+            sb.append("\n\n");
+            sb.append(regionStatistic);
+        }
+
+        response.setParseMode("HTML");
+        response.setText(sb.toString());
     }
 
     private void getStatisticsWorldResponseText(SendMessage response) {
         String statistics = statisticJsonWorldService.getStatistics();
 
-//        response.setText("Скоро буде!");
         response.setParseMode("HTML");
         response.setText(statistics);
     }
