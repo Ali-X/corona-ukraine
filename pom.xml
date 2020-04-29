@@ -139,20 +139,10 @@
 
         <resources>
             <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>**/*.*</include>
-                </includes>
-                <excludes>
-                    <exclude>profiles/**</exclude>
-                </excludes>
-            </resource>
-            <resource>
                 <directory>src/main/resources/profiles/${profile.name}</directory>
+                <filtering>true</filtering>
                 <includes>
-                    <include>**/*.*</include>
-                    <include>*.properties</include>
-                    <include>*.yaml</include>
+                    <include>*</include>
                 </includes>
             </resource>
         </resources>

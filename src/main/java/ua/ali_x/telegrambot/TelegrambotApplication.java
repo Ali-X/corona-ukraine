@@ -17,7 +17,6 @@ import ua.ali_x.telegrambot.schedule.SchedulerService;
 @EntityScan
 @EnableJpaRepositories
 @EnableScheduling
-@PropertySource(value = "classpath:application.properties")
 public class TelegrambotApplication implements CommandLineRunner {
 
     static {
