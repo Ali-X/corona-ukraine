@@ -92,6 +92,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jdbc</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!--        lombok-->
@@ -142,6 +148,19 @@
             <version>1.13.1</version>
         </dependency>
 
+<!--        Hikari-->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
+<!--        google-->
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>postgres-socket-factory</artifactId>
+            <version>1.0.16</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -178,7 +197,7 @@
                 <version>2.2.0</version>
                 <configuration>
                     <deploy.projectId>corona-ukraine</deploy.projectId>
-                    <deploy.version>2</deploy.version>
+                    <deploy.version>3</deploy.version>
                 </configuration>
             </plugin>
 
