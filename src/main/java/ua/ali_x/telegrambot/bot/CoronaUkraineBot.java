@@ -32,10 +32,16 @@ import java.util.List;
 @Component
 public class CoronaUkraineBot extends TelegramLongPollingBot {
 
-    public static final String STATISTIC_QUESTION_UKRAINE = "Яка статистика в Україні?";
-    public static final String STATISTIC_QUESTION_WORLD = "Яка статистика в світі?";
+//    questions
+    public static final String GENERAL_STATISTIC_QUESTION = "Загальна статистика";
+    public static final String DETAILED_STATISTIC_QUESTION = "Детальна статистика";
+    public static final String STATISTIC_QUESTION_UKRAINE = "Статистика в Україні";
+    public static final String STATISTIC_QUESTION_WORLD = "Статистика в світі";
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
-    public static final String FEEDBACK_QUESTION = "Як залишити відгук?";
+    public static final String FEEDBACK_QUESTION = "Залишити відгук";
+    public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню..";
+
+//    answers
     public static final String FEEDBACK_ANSWER_START_UA = "відгук";
     public static final String FEEDBACK_ANSWER_START_RU = "отзыв";
     public static final String FEEDBACK_ANSWER_START_EN = "feedback";
@@ -118,32 +124,42 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         switch (userResponse) {
             case "/start": {
                 getWelcomeResponseText(response);
-                setButtons(response);
+                setMainButtons(response);
+                break;
+            }
+            case GENERAL_STATISTIC_QUESTION: {
+                getStatisticsUkraineResponseText(response);
+                setMainButtons(response);
+                break;
+            }
+            case DETAILED_STATISTIC_QUESTION: {
+                getChooseMenuResponseText(response);
+                setDetailedStatisticButtons(response);
                 break;
             }
             case STATISTIC_QUESTION_UKRAINE: {
-                getStatisticsUkraineResponseText(response);
-                setButtons(response);
+                getStatisticsUkraineRegionsResponseText(response);
+                setMainButtons(response);
                 break;
             }
             case STATISTIC_QUESTION_WORLD: {
                 getStatisticsWorldResponseText(response);
-                setButtons(response);
+                setMainButtons(response);
                 break;
             }
 
             case QUARANTINE_QUESTION: {
                 getDaysLeftResponseText(response);
-                setButtons(response);
+                setMainButtons(response);
                 break;
             }
             case FEEDBACK_QUESTION: {
                 getFeedbackQuestionText(response);
-                setButtons(response);
+                setMainButtons(response);
                 break;
             }
             default:
-                setButtons(response);
+                setMainButtons(response);
                 break;
         }
 
@@ -183,7 +199,30 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         response.setText(quarantineService.getDaysLeftMessage());
     }
 
-    public synchronized void setButtons(SendMessage sendMessage) {
+    public synchronized void setMainButtons(SendMessage sendMessage) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(false);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        keyboardFirstRow.add(new KeyboardButton(GENERAL_STATISTIC_QUESTION));
+        keyboardFirstRow.add(new KeyboardButton(DETAILED_STATISTIC_QUESTION));
+
+        KeyboardRow keyboardSecondRow = new KeyboardRow();
+//        keyboardSecondRow.add(new KeyboardButton(QUARANTINE_QUESTION));
+        keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
+
+        keyboard.add(keyboardFirstRow);
+        keyboard.add(keyboardSecondRow);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setDetailedStatisticButtons(SendMessage sendMessage) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         replyKeyboardMarkup.setSelective(false);
@@ -196,12 +235,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_UKRAINE));
         keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_WORLD));
 
-        KeyboardRow keyboardSecondRow = new KeyboardRow();
-        keyboardSecondRow.add(new KeyboardButton(QUARANTINE_QUESTION));
-        keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
-
         keyboard.add(keyboardFirstRow);
-        keyboard.add(keyboardSecondRow);
 
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
@@ -233,15 +267,15 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
         sb.append(statistics);
 
-        String regionStatistic = statisticJsonUkraineRegionService.getStatistics();
-
-        if (StringUtils.isNoneBlank(regionStatistic)) {
-            sb.append("\n\n");
-            sb.append(regionStatistic);
-        }
-
         response.setParseMode("HTML");
         response.setText(sb.toString());
+    }
+
+    private void getStatisticsUkraineRegionsResponseText(SendMessage response) {
+        String regionStatistic = statisticJsonUkraineRegionService.getStatistics();
+
+        response.setParseMode("HTML");
+        response.setText(regionStatistic);
     }
 
     private void getStatisticsWorldResponseText(SendMessage response) {
@@ -249,6 +283,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
         response.setParseMode("HTML");
         response.setText(statistics);
+    }
+
+    private void getChooseMenuResponseText(SendMessage response) {
+        response.setText(CHOOSE_MENU_QUESTION);
     }
 
     @Override
