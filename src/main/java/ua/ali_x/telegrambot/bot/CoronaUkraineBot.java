@@ -47,6 +47,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String COURSE_QUESTION_EXCHANGE = "Курс валют";
     public static final String COURSE_QUESTION_METAL = "Курс металу";
     public static final String COURSE_QUESTION_BITCOIN = "Курс біткойну";
+    public static final String COURSE_QUESTION_OIL = "Курс нафти";
     public static final String ERROR_QUESTION = "Вибачте, сталась помилка!";
 
     //    answers
@@ -93,6 +94,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     @Autowired
     @Qualifier("bitcoinCoursePB")
     private CourseService courseBitcoinService;
+
+    @Autowired
+    @Qualifier("oilCourse")
+    private CourseService courseOilService;
 
     @Value("${botname}")
     private String botname;
@@ -198,6 +203,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
+            case COURSE_QUESTION_OIL: {
+                getCourseOilText(response);
+                setMainButtons(response);
+                break;
+            }
             default:
                 setMainButtons(response);
                 break;
@@ -228,6 +238,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private void getCourseBitcoinText(SendMessage response) {
         response.setParseMode("HTML");
         response.setText(courseBitcoinService.getCourse());
+    }
+
+    private void getCourseOilText(SendMessage response) {
+        response.setParseMode("HTML");
+        response.setText(courseOilService.getCourse());
     }
 
     private void sendTypingChatAction(SendMessage response) {
@@ -320,6 +335,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
         KeyboardRow keyboardSecondRow = new KeyboardRow();
         keyboardSecondRow.add(new KeyboardButton(COURSE_QUESTION_BITCOIN));
+        keyboardSecondRow.add(new KeyboardButton(COURSE_QUESTION_OIL));
 
         keyboard.add(keyboardFirstRow);
         keyboard.add(keyboardSecondRow);
