@@ -15,9 +15,10 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.ali_x.telegrambot.dao.FeedbackDao;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
-import ua.ali_x.telegrambot.dao.ScheduleDao;
+import ua.ali_x.telegrambot.dao.UserChatDao;
 import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
+import ua.ali_x.telegrambot.model.UserChat;
 import ua.ali_x.telegrambot.service.QuarantineService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
 
@@ -32,7 +33,7 @@ import java.util.List;
 @Component
 public class CoronaUkraineBot extends TelegramLongPollingBot {
 
-//    questions
+    //    questions
     public static final String GENERAL_STATISTIC_QUESTION = "Загальна статистика";
     public static final String DETAILED_STATISTIC_QUESTION = "Детальна статистика";
     public static final String STATISTIC_QUESTION_UKRAINE = "Статистика в Україні";
@@ -41,13 +42,13 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String FEEDBACK_QUESTION = "Залишити відгук";
     public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню..";
 
-//    answers
+    //    answers
     public static final String FEEDBACK_ANSWER_START_UA = "відгук";
     public static final String FEEDBACK_ANSWER_START_RU = "отзыв";
     public static final String FEEDBACK_ANSWER_START_EN = "feedback";
 
     @Autowired
-    private ScheduleDao scheduleDao;
+    private UserChatDao userChatDao;
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
@@ -177,10 +178,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         String messageText = message.getText();
 
         if (StringUtils.isNoneBlank(messageText)) {
+            UserChat userChat = userChatDao.findFirstByChatId(message.getChatId());
             Feedback feedback = new Feedback();
             feedback.setFeedback(messageText);
-            feedback.setUsername(message.getFrom().getUserName());
-            feedback.setChatId(message.getChatId());
+            feedback.setUserChat(userChat);
             feedback.setDate(new Date());
 
             feedbackDao.save(feedback);
@@ -246,10 +247,13 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void registerNewUser(Message message) {
-        if (scheduleDao.findByChatId(message.getChatId()) == null) {
+        if (userChatDao.findFirstByChatId(message.getChatId()) == null) {
+            UserChat userChat = new UserChat();
+            userChat.setChatId(message.getChatId());
+            userChat.setUsername(message.getFrom().getUserName());
+            userChat.setPhone(message.getContact() != null ? message.getContact().getPhoneNumber() : null);
+
             Schedule scheduleObj = new Schedule();
-            scheduleObj.setChatId(message.getChatId());
-            scheduleObj.setName(message.getFrom().getUserName());
             scheduleObj.setCron("0 0 10 1/1 * ? *");
             scheduleObj.setEnabled(true);
 

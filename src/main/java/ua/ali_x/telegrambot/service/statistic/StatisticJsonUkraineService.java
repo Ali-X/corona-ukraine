@@ -1,20 +1,14 @@
 package ua.ali_x.telegrambot.service.statistic;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import ua.ali_x.telegrambot.service.RequestService;
 
 @Component
-public class StatisticJsonUkraineService implements StatisticService {
+public class StatisticJsonUkraineService implements StatisticService, RequestService {
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;

@@ -15,8 +15,10 @@ public class Schedule implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
-    private long chatId;
-    private String name;
+
+    @OneToOne(mappedBy = "schedule")
+    private UserChat userChat;
+
     private String cron;
     private Boolean enabled;
 }

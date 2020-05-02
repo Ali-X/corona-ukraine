@@ -6,13 +6,14 @@ import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.service.RequestService;
 import ua.ali_x.telegrambot.service.TranslationService;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class StatisticJsonUkraineRegionService implements StatisticService {
+public class StatisticJsonUkraineRegionService implements StatisticService, RequestService {
 
     private final List<String> excludedRegions = Arrays.asList("АР Крым");
 

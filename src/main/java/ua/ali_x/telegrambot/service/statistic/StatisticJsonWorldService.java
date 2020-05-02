@@ -6,6 +6,7 @@ import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.service.RequestService;
 import ua.ali_x.telegrambot.service.TranslationService;
 
 import java.math.BigDecimal;
@@ -13,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class StatisticJsonWorldService implements StatisticService {
+public class StatisticJsonWorldService implements StatisticService, RequestService {
 
     private final List<String> countries = Arrays.asList("Китай", "Италия", "Испания", "Германия", "США", "Польша", "Россия", "ОАЭ", "Египет", "Южная Корея", "Франция", "Япония", "Канада", "Австралия", "Португалия", "Израиль");
 

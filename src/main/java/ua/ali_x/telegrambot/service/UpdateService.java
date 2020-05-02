@@ -29,7 +29,7 @@ public class UpdateService {
             List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
 
             allEnabledUser.forEach(schedule -> {
-                telegramService.sendMessage(schedule.getChatId(), message, token);
+                telegramService.sendMessage(schedule.getUserChat().getChatId(), message, token);
             });
 
             return Boolean.TRUE;

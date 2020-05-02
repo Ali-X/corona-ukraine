@@ -31,7 +31,7 @@ public class SchedulerService {
             List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
 
             allEnabledUser.forEach(schedule -> {
-                initStatisticJob(schedule.getChatId(), schedule.getCron());
+                initStatisticJob(schedule.getUserChat().getChatId(), schedule.getCron());
             });
 
 

@@ -16,8 +16,9 @@ public class Feedback implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private String feedback;
-    private String username;
-    @Column(columnDefinition = "int8 default 0")
-    private long chatId;
     private Date date;
+
+    @ManyToOne
+    @JoinColumn(name="user_chat_id", nullable=false)
+    private UserChat userChat;
 }
