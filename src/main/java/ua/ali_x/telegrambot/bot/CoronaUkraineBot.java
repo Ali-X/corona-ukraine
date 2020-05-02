@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -187,8 +188,18 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void getCourseText(SendMessage response) {
+        sendTypingChatAction(response);
+
         response.setParseMode("HTML");
         response.setText(courseService.getCourse());
+    }
+
+    private void sendTypingChatAction(SendMessage response) {
+        try {
+            execute(new SendChatAction(response.getChatId(), "typing"));
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveFeedback(Message message) {
