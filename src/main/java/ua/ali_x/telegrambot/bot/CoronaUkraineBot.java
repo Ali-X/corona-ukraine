@@ -40,7 +40,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String STATISTIC_QUESTION_WORLD = "Статистика в світі";
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
     public static final String FEEDBACK_QUESTION = "Залишити відгук";
-    public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню..";
+    public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню.";
 
     //    answers
     public static final String FEEDBACK_ANSWER_START_UA = "відгук";
@@ -214,7 +214,6 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         keyboardFirstRow.add(new KeyboardButton(DETAILED_STATISTIC_QUESTION));
 
         KeyboardRow keyboardSecondRow = new KeyboardRow();
-//        keyboardSecondRow.add(new KeyboardButton(QUARANTINE_QUESTION));
         keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
 
         keyboard.add(keyboardFirstRow);
@@ -257,7 +256,9 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
             scheduleObj.setCron("0 0 10 1/1 * ? *");
             scheduleObj.setEnabled(true);
 
-            scheduleDao.save(scheduleObj);
+            userChat.setSchedule(scheduleObj);
+
+            userChatDao.save(userChat);
         }
     }
 
