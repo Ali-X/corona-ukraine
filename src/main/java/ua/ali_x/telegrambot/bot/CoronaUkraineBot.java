@@ -46,6 +46,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String COURSE_QUESTION = "Курс";
     public static final String COURSE_QUESTION_EXCHANGE = "Курс валют";
     public static final String COURSE_QUESTION_METAL = "Курс металу";
+    public static final String COURSE_QUESTION_BITCOIN = "Курс біткойну";
     public static final String ERROR_QUESTION = "Вибачте, сталась помилка!";
 
     //    answers
@@ -88,6 +89,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     @Autowired
     @Qualifier("metalCourse")
     private CourseService courseMetalService;
+
+    @Autowired
+    @Qualifier("bitcoinCoursePB")
+    private CourseService courseBitcoinService;
 
     @Value("${botname}")
     private String botname;
@@ -188,6 +193,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
+            case COURSE_QUESTION_BITCOIN: {
+                getCourseBitcoinText(response);
+                setMainButtons(response);
+                break;
+            }
             default:
                 setMainButtons(response);
                 break;
@@ -213,6 +223,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private void getCourseMetalText(SendMessage response) {
         response.setParseMode("HTML");
         response.setText(courseMetalService.getCourse());
+    }
+
+    private void getCourseBitcoinText(SendMessage response) {
+        response.setParseMode("HTML");
+        response.setText(courseBitcoinService.getCourse());
     }
 
     private void sendTypingChatAction(SendMessage response) {
@@ -303,7 +318,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         keyboardFirstRow.add(new KeyboardButton(COURSE_QUESTION_EXCHANGE));
         keyboardFirstRow.add(new KeyboardButton(COURSE_QUESTION_METAL));
 
+        KeyboardRow keyboardSecondRow = new KeyboardRow();
+        keyboardSecondRow.add(new KeyboardButton(COURSE_QUESTION_BITCOIN));
+
         keyboard.add(keyboardFirstRow);
+        keyboard.add(keyboardSecondRow);
 
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
