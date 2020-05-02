@@ -20,6 +20,7 @@ import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.model.UserChat;
 import ua.ali_x.telegrambot.service.QuarantineService;
+import ua.ali_x.telegrambot.service.course.CourseService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
 
 import java.io.IOException;
@@ -41,6 +42,8 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
     public static final String FEEDBACK_QUESTION = "Залишити відгук";
     public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню.";
+    public static final String COURSE_QUESTION = "Курс";
+    public static final String ERROR_QUESTION = "Вибачте, сталась помилка!";
 
     //    answers
     public static final String FEEDBACK_ANSWER_START_UA = "відгук";
@@ -74,6 +77,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
     @Autowired
     private FeedbackDao feedbackDao;
+
+    @Autowired
+    @Qualifier("exchangeCoursePB")
+    private CourseService courseService;
 
     @Value("${botname}")
     private String botname;
@@ -159,6 +166,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
+            case COURSE_QUESTION: {
+                getCourseText(response);
+                setMainButtons(response);
+                break;
+            }
             default:
                 setMainButtons(response);
                 break;
@@ -172,6 +184,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         }
 
         return response;
+    }
+
+    private void getCourseText(SendMessage response) {
+        response.setParseMode("HTML");
+        response.setText(courseService.getCourse());
     }
 
     private void saveFeedback(Message message) {
@@ -214,6 +231,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         keyboardFirstRow.add(new KeyboardButton(DETAILED_STATISTIC_QUESTION));
 
         KeyboardRow keyboardSecondRow = new KeyboardRow();
+        keyboardSecondRow.add(new KeyboardButton(COURSE_QUESTION));
         keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
 
         keyboard.add(keyboardFirstRow);
