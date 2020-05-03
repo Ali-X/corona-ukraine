@@ -8,6 +8,9 @@ handlers:
 
 instance_class: B2
 
+manual_scaling:
+  instances: 1
+
 resources:
   cpu: 2
   memory_gb: 2.3
