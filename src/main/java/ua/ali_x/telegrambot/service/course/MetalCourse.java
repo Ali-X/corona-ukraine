@@ -43,74 +43,104 @@ public class MetalCourse implements CourseService, RequestService {
         DocumentContext documentContextToday = sendGET(String.format(api, dateToday));
         DocumentContext documentContextYesterday = sendGET(String.format(api, dateYesterday));
 
-        Double goldToday = (Double) documentContextToday.read(String.format(jsonPathPattern, gold), JSONArray.class).get(0);
-        Double silverToday = (Double) documentContextToday.read(String.format(jsonPathPattern, silver), JSONArray.class).get(0);
-        Double platinumToday = (Double) documentContextToday.read(String.format(jsonPathPattern, platinum), JSONArray.class).get(0);
-        Double paladiumToday = (Double) documentContextToday.read(String.format(jsonPathPattern, paladium), JSONArray.class).get(0);
+        if (documentContextToday.read(String.format(jsonPathPattern, gold), JSONArray.class).isEmpty()) {
+            Double goldYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, gold), JSONArray.class).get(0);
+            Double silverYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, silver), JSONArray.class).get(0);
+            Double platinumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, platinum), JSONArray.class).get(0);
+            Double paladiumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, paladium), JSONArray.class).get(0);
 
-        Double goldYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, gold), JSONArray.class).get(0);
-        Double silverYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, silver), JSONArray.class).get(0);
-        Double platinumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, platinum), JSONArray.class).get(0);
-        Double paladiumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, paladium), JSONArray.class).get(0);
-
-        Double differenceGold = goldToday - goldYesterday;
-        Double differenceSilver = silverToday - silverYesterday;
-        Double differencePlatinum = platinumToday - platinumYesterday;
-        Double differencePaladium = paladiumToday - paladiumYesterday;
-
-        StringBuilder responseSB = new StringBuilder();
-        responseSB.append(responseToday);
+            StringBuilder responseSB = new StringBuilder();
+            responseSB.append(responseToday);
 
 //        Gold
-        responseSB.append(responseGold);
-        responseSB.append(String.format(responsePrice, goldToday));
+            responseSB.append(responseGold);
+            responseSB.append(String.format(responsePrice, goldYesterday));
 
-        if (differenceGold > 0.0d) {
-            responseSB.append(String.format(responseDiffPlus, smileUp, differenceGold));
+            //        Silver
+            responseSB.append(responseSilver);
+            responseSB.append(String.format(responsePrice, silverYesterday));
+
+            //        Platinum
+            responseSB.append(responsePlatinum);
+            responseSB.append(String.format(responsePrice, platinumYesterday));
+
+            //        Paladium
+            responseSB.append(responsePaladium);
+            responseSB.append(String.format(responsePrice, paladiumYesterday));
+
+            responseSB.append(responseCurrency);
+
+            return responseSB.toString();
+        } else {
+            Double goldToday = (Double) documentContextToday.read(String.format(jsonPathPattern, gold), JSONArray.class).get(0);
+            Double silverToday = (Double) documentContextToday.read(String.format(jsonPathPattern, silver), JSONArray.class).get(0);
+            Double platinumToday = (Double) documentContextToday.read(String.format(jsonPathPattern, platinum), JSONArray.class).get(0);
+            Double paladiumToday = (Double) documentContextToday.read(String.format(jsonPathPattern, paladium), JSONArray.class).get(0);
+
+            Double goldYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, gold), JSONArray.class).get(0);
+            Double silverYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, silver), JSONArray.class).get(0);
+            Double platinumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, platinum), JSONArray.class).get(0);
+            Double paladiumYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, paladium), JSONArray.class).get(0);
+
+            Double differenceGold = goldToday - goldYesterday;
+            Double differenceSilver = silverToday - silverYesterday;
+            Double differencePlatinum = platinumToday - platinumYesterday;
+            Double differencePaladium = paladiumToday - paladiumYesterday;
+
+            StringBuilder responseSB = new StringBuilder();
+            responseSB.append(responseToday);
+
+//        Gold
+            responseSB.append(responseGold);
+            responseSB.append(String.format(responsePrice, goldToday));
+
+            if (differenceGold > 0.0d) {
+                responseSB.append(String.format(responseDiffPlus, smileUp, differenceGold));
+            }
+
+            if (differenceGold < 0.0d) {
+                responseSB.append(String.format(responseDiff, smileDown, differenceGold));
+            }
+
+            //        Silver
+            responseSB.append(responseSilver);
+            responseSB.append(String.format(responsePrice, silverToday));
+
+            if (differenceSilver > 0.0d) {
+                responseSB.append(String.format(responseDiffPlus, smileUp, differenceSilver));
+            }
+
+            if (differenceSilver < 0.0d) {
+                responseSB.append(String.format(responseDiff, smileDown, differenceSilver));
+            }
+
+            //        Platinum
+            responseSB.append(responsePlatinum);
+            responseSB.append(String.format(responsePrice, platinumToday));
+
+            if (differencePlatinum > 0.0d) {
+                responseSB.append(String.format(responseDiffPlus, smileUp, differencePlatinum));
+            }
+
+            if (differencePlatinum < 0.0d) {
+                responseSB.append(String.format(responseDiff, smileDown, differencePlatinum));
+            }
+
+            //        Paladium
+            responseSB.append(responsePaladium);
+            responseSB.append(String.format(responsePrice, paladiumToday));
+
+            if (differencePaladium > 0.0d) {
+                responseSB.append(String.format(responseDiffPlus, smileUp, differencePaladium));
+            }
+
+            if (differencePaladium < 0.0d) {
+                responseSB.append(String.format(responseDiff, smileDown, differencePaladium));
+            }
+
+            responseSB.append(responseCurrency);
+
+            return responseSB.toString();
         }
-
-        if (differenceGold < 0.0d) {
-            responseSB.append(String.format(responseDiff, smileDown, differenceGold));
-        }
-
-        //        Silver
-        responseSB.append(responseSilver);
-        responseSB.append(String.format(responsePrice, silverToday));
-
-        if (differenceSilver > 0.0d) {
-            responseSB.append(String.format(responseDiffPlus, smileUp, differenceSilver));
-        }
-
-        if (differenceSilver < 0.0d) {
-            responseSB.append(String.format(responseDiff, smileDown, differenceSilver));
-        }
-
-        //        Platinum
-        responseSB.append(responsePlatinum);
-        responseSB.append(String.format(responsePrice, platinumToday));
-
-        if (differencePlatinum > 0.0d) {
-            responseSB.append(String.format(responseDiffPlus, smileUp, differencePlatinum));
-        }
-
-        if (differencePlatinum < 0.0d) {
-            responseSB.append(String.format(responseDiff, smileDown, differencePlatinum));
-        }
-
-        //        Paladium
-        responseSB.append(responsePaladium);
-        responseSB.append(String.format(responsePrice, paladiumToday));
-
-        if (differencePaladium > 0.0d) {
-            responseSB.append(String.format(responseDiffPlus, smileUp, differencePaladium));
-        }
-
-        if (differencePaladium < 0.0d) {
-            responseSB.append(String.format(responseDiff, smileDown, differencePaladium));
-        }
-
-        responseSB.append(responseCurrency);
-
-        return responseSB.toString();
     }
 }
