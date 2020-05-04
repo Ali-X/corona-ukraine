@@ -20,6 +20,7 @@ import ua.ali_x.telegrambot.dao.UserChatDao;
 import ua.ali_x.telegrambot.model.Feedback;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.model.UserChat;
+import ua.ali_x.telegrambot.schedule.SchedulerService;
 import ua.ali_x.telegrambot.service.QuarantineService;
 import ua.ali_x.telegrambot.service.course.CourseService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
@@ -60,6 +61,9 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
+
+    @Autowired
+    private SchedulerService scheduleService;
 
     @Autowired
     @Qualifier("statisticJsonUkraineService")
@@ -362,6 +366,8 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
             userChat.setSchedule(scheduleObj);
 
             userChatDao.save(userChat);
+
+            scheduleService.initStatisticJob(userChat.getChatId(), scheduleObj.getCron());
         }
     }
 
