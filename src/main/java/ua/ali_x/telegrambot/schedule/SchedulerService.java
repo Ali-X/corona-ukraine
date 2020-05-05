@@ -8,6 +8,7 @@ import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.ScheduleService;
 
 import java.util.List;
+import java.util.TimeZone;
 
 @Component
 public class SchedulerService {
@@ -56,7 +57,7 @@ public class SchedulerService {
             CronTrigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity("statisticTrigger_" + chatId, "statistic")
                     .startNow()
-                    .withSchedule(CronScheduleBuilder.cronSchedule(cron))
+                    .withSchedule(CronScheduleBuilder.cronSchedule(cron).inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
                     .forJob(jobName, "statistic")
                     .build();
 

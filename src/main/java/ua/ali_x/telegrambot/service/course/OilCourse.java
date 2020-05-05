@@ -10,7 +10,7 @@ import java.io.IOException;
 @Component
 public class OilCourse implements CourseService, RequestService {
     private final String api = "https://www.finanz.ru/birzhevyye-tovary/grafik-v-realnom-vremeni/neft-cena";
-    private final String responseToday = "Курс нафти станом на сьогодні:";
+    private final String responseToday = "Курс нафти Brent станом на сьогодні:";
     private final String responsePrice = " <b>%s</b> USD/барель";
 
     @Override
