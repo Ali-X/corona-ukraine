@@ -46,6 +46,8 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню.";
     public static final String COURSE_QUESTION = "Курс";
     public static final String COURSE_QUESTION_EXCHANGE = "Курс валют";
+    public static final String COURSE_QUESTION_EXCHANGE_PB = "Курс Приват Банку";
+    public static final String COURSE_QUESTION_EXCHANGE_NBU = "Курс НБУ";
     public static final String COURSE_QUESTION_METAL = "Курс металу";
     public static final String COURSE_QUESTION_BITCOIN = "Курс біткойну";
     public static final String COURSE_QUESTION_OIL = "Курс нафти";
@@ -89,7 +91,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
     @Autowired
     @Qualifier("exchangeCoursePB")
-    private CourseService courseExchangeService;
+    private CourseService courseExchangeServicePB;
+
+    @Autowired
+    @Qualifier("exchangeCourseNBU")
+    private CourseService courseExchangeServiceNBU;
 
     @Autowired
     @Qualifier("metalCourse")
@@ -193,7 +199,17 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 break;
             }
             case COURSE_QUESTION_EXCHANGE: {
-                getCourseExchangeText(response);
+                getChooseMenuResponseText(response);
+                setExchangeCourseButtons(response);
+                break;
+            }
+            case COURSE_QUESTION_EXCHANGE_PB: {
+                getCourseExchangePBText(response);
+                setMainButtons(response);
+                break;
+            }
+            case COURSE_QUESTION_EXCHANGE_NBU: {
+                getCourseExchangeNBUText(response);
                 setMainButtons(response);
                 break;
             }
@@ -227,11 +243,18 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         return response;
     }
 
-    private void getCourseExchangeText(SendMessage response) {
+    private void getCourseExchangePBText(SendMessage response) {
         sendTypingChatAction(response);
 
         response.setParseMode("HTML");
-        response.setText(courseExchangeService.getCourse());
+        response.setText(courseExchangeServicePB.getCourse());
+    }
+
+    private void getCourseExchangeNBUText(SendMessage response) {
+        sendTypingChatAction(response);
+
+        response.setParseMode("HTML");
+        response.setText(courseExchangeServiceNBU.getCourse());
     }
 
     private void getCourseMetalText(SendMessage response) {
@@ -343,6 +366,24 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
         keyboard.add(keyboardFirstRow);
         keyboard.add(keyboardSecondRow);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setExchangeCourseButtons(SendMessage sendMessage) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(false);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        keyboardFirstRow.add(new KeyboardButton(COURSE_QUESTION_EXCHANGE_PB));
+        keyboardFirstRow.add(new KeyboardButton(COURSE_QUESTION_EXCHANGE_NBU));
+
+        keyboard.add(keyboardFirstRow);
 
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
