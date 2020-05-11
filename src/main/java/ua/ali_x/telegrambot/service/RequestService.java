@@ -3,38 +3,34 @@ package ua.ali_x.telegrambot.service;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 public interface RequestService {
 
     default DocumentContext sendGET(String url) {
         try {
-            URL obj = new URL(url);
+            HttpClient httpClient = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_2)
+                    .build();
 
-            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-            con.setRequestMethod("GET");
-            int responseCode = con.getResponseCode();
-            System.out.println("GET Response Code :: " + responseCode + " :: " + url);
-            if (responseCode == HttpURLConnection.HTTP_OK) { // success
-                BufferedReader in = new BufferedReader(new InputStreamReader(
-                        con.getInputStream()));
-                String inputLine;
-                StringBuilder response = new StringBuilder();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-                return JsonPath.parse(response.toString());
-            } else {
-                System.out.println("GET request not worked");
+            System.out.println("GET Response Code :: " + response.statusCode() + " :: " + url);
+
+            if (response.statusCode() == HttpURLConnection.HTTP_OK) { // success
+                return JsonPath.parse(response.body());
             }
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
 
