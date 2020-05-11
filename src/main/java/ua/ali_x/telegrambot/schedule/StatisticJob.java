@@ -51,6 +51,7 @@ public class StatisticJob implements Job {
         String daysLeftMsg = instance.quarantineService.getDaysLeftMessage();
         MessageHistory history = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
         String statistics;
+        int counter = 10;
 
         do {
             statistics = instance.statisticHtmlUkraineService.getStatistics();
@@ -62,6 +63,8 @@ public class StatisticJob implements Job {
             if (history == null || formatter.format(history.getDate()).equals(formatter.format(new Date()))) {
                 break;
             } else if (history.getMessage().equals(statistics)) {
+                counter--;
+
                 try {
                     Thread.sleep(300000); // 5min
 //                    Thread.sleep(5000); // 5 sec
@@ -77,7 +80,7 @@ public class StatisticJob implements Job {
 
                 break;
             }
-        } while (true);
+        } while (counter > 0);
 
         instance.telegramService.sendMessage(chatId, statistics, instance.token);
         instance.telegramService.sendMessage(chatId, daysLeftMsg, instance.token);
