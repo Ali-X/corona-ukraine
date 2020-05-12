@@ -94,7 +94,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     private CourseService courseExchangeServicePB;
 
     @Autowired
-    @Qualifier("exchangeCourseNBU")
+    @Qualifier("exchangeArchiveCourseNBU")
     private CourseService courseExchangeServiceNBU;
 
     @Autowired
