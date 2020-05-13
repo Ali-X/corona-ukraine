@@ -44,8 +44,7 @@ public class SchedulerService {
             CronTrigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity("infoCollectorTrigger", "infoCollector")
                     .startNow()
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 16 22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
-//                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 7,12,22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 7,12,22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
                     .forJob(jobName, "infoCollector")
                     .build();
 
