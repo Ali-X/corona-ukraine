@@ -4,7 +4,9 @@ import com.jayway.jsonpath.DocumentContext;
 import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ua.ali_x.telegrambot.dao.MessageHistoryDao;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.service.RequestService;
 
 @Component
@@ -13,7 +15,20 @@ public class StatisticJsonUkraineService implements StatisticService, RequestSer
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
+    @Autowired
+    private MessageHistoryDao messageHistoryDao;
+
     public String getStatistics() {
+        MessageHistory statisticMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
+
+        if (statisticMessageHistory == null || statisticMessageHistory.getMessage() == null) {
+            return extractStatistic();
+        } else {
+            return statisticMessageHistory.getMessage();
+        }
+    }
+
+    private String extractStatistic() {
         String message = messageTemplateDao.findFirstByCode("statistic_ukraine_d").getMessage();
 
         String basePath = "$.data[?(@.name_en=='Украина')]";

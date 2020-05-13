@@ -2,7 +2,10 @@ package ua.ali_x.telegrambot.service.course;
 
 import com.jayway.jsonpath.DocumentContext;
 import net.minidev.json.JSONArray;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import ua.ali_x.telegrambot.dao.MessageHistoryDao;
+import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.service.RequestService;
 
 @Component
@@ -22,9 +25,21 @@ public class ExchangeCoursePB implements CourseService, RequestService {
     private final String responseBuy = " купівля: <b>%.2f</b> грн.";
     private final String responseSale = " продаж: <b>%.2f</b> грн.";
 
+    @Autowired
+    private MessageHistoryDao messageHistoryDao;
 
     @Override
     public String getCourse() {
+        MessageHistory coursePBMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("coursePB");
+
+        if (coursePBMessageHistory == null || coursePBMessageHistory.getMessage() == null) {
+            return extractCourse();
+        } else {
+            return coursePBMessageHistory.getMessage();
+        }
+    }
+
+    private String extractCourse() {
         DocumentContext documentContextToday = sendGET(api);
 
         String usdSaleToday = (String) documentContextToday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).get(0);

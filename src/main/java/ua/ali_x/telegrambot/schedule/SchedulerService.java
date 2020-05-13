@@ -28,6 +28,37 @@ public class SchedulerService {
     }
 
     public void initSchedulers() {
+        initStatisticSchedulers();
+        initMessageHistorySchedulers();
+    }
+
+    private void initMessageHistorySchedulers() {
+        try {
+            String jobName = "infoCollectorJob";
+            JobDetail job = JobBuilder.newJob(InfoCollectorJob.class)
+                    .withIdentity(jobName, "infoCollector")
+                    .usingJobData("jobName", jobName)
+                    .build();
+
+
+            CronTrigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity("infoCollectorTrigger", "infoCollector")
+                    .startNow()
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 16 22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
+//                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 7,12,22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
+                    .forJob(jobName, "infoCollector")
+                    .build();
+
+
+            scheduler.scheduleJob(job, trigger);
+
+            System.out.println("Job " + jobName + " is scheduled");
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initStatisticSchedulers() {
         try {
             List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
 
