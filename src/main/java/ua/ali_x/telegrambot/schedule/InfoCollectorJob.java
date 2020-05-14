@@ -44,7 +44,7 @@ public class InfoCollectorJob implements Job {
     public void execute(JobExecutionContext jobExecutionContext) {
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
 
-        extractStatisticUA();
+//        extractStatisticUA();
         extractCourseNBU();
         extractCoursePB();
 

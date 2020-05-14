@@ -60,26 +60,34 @@ public class StatisticJob implements Job {
                 statistics = instance.statisticJsonUkraineService.getStatistics();
             }
 
-            if (history == null || formatter.format(history.getDate()).equals(formatter.format(new Date()))) {
-                break;
-            } else if (history.getMessage().equals(statistics)) {
-                counter--;
+                if (history == null) {
+                    MessageHistory newHistory = new MessageHistory();
+                    newHistory.setDate(new Date());
+                    newHistory.setMessage(statistics);
+                    newHistory.setType("statistic");
+                    instance.messageHistoryDao.save(newHistory);
 
-                try {
-                    Thread.sleep(300000); // 5min
+                    break;
+                } else if (formatter.format(history.getDate()).equals(formatter.format(new Date()))) {
+                    break;
+                } else if (history.getMessage().equals(statistics)) {
+                    counter--;
+
+                    try {
+                        Thread.sleep(300000); // 5min
 //                    Thread.sleep(5000); // 5 sec
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else if (!history.getMessage().equals(statistics)) {
-                MessageHistory newHistory = new MessageHistory();
-                newHistory.setDate(new Date());
-                newHistory.setMessage(statistics);
-                newHistory.setType("statistic");
-                instance.messageHistoryDao.save(newHistory);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (!history.getMessage().equals(statistics)) {
+                    MessageHistory newHistory = new MessageHistory();
+                    newHistory.setDate(new Date());
+                    newHistory.setMessage(statistics);
+                    newHistory.setType("statistic");
+                    instance.messageHistoryDao.save(newHistory);
 
-                break;
-            }
+                    break;
+                }
         } while (counter > 0);
 
         instance.telegramService.sendMessage(chatId, statistics, instance.token);
