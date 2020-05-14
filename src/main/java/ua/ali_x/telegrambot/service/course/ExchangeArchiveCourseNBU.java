@@ -19,7 +19,7 @@ public class ExchangeArchiveCourseNBU implements CourseService, RequestService {
     private final String sale = "saleRateNB";
     private final String buy = "purchaseRateNB";
     private final String jsonPathPattern = "$.exchangeRate[?(@.currency=='%s')].%s";
-    private final String responseToday = "Курс у НБУ станом на сьогодні:";
+    private final String responseToday = "Курс у НБУ станом на %s:";
     private final String responseUsd = "\n\n<b>Долар:</b>";
     private final String responseEur = "\n<b>Євро:</b>";
     private final String responseRub = "\n<b>Рубль:</b>";
@@ -34,74 +34,48 @@ public class ExchangeArchiveCourseNBU implements CourseService, RequestService {
     private String extractCourse() {
         DateTimeFormatter europeanDateFormatter = DateTimeFormatter.ofPattern(datePattern);
 
-        LocalDate now = LocalDate.now();
-        LocalDate yesterday = now.minusDays(1);
+        int n = 0;
 
-        String dateToday = europeanDateFormatter.format(now);
-        String dateYesterday = europeanDateFormatter.format(yesterday);
+        do {
+            LocalDate date = LocalDate.now().minusDays(n);
+            String dateStr = europeanDateFormatter.format(date);
 
-        DocumentContext documentContextToday = sendGET(api + dateToday);
+            DocumentContext documentContextToday = sendGET(api + dateStr);
 
-        if (documentContextToday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).isEmpty()) {
-            DocumentContext documentContextYesterday = sendGET(api + dateYesterday);
+            if (!documentContextToday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).isEmpty()) {
+                Double usdSale = (Double) documentContextToday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).get(0);
+                Double usdBuy = (Double) documentContextToday.read(String.format(jsonPathPattern, usd, buy), JSONArray.class).get(0);
 
-            Double usdSaleYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).get(0);
-            Double usdBuyYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, usd, buy), JSONArray.class).get(0);
+                Double eurSale = (Double) documentContextToday.read(String.format(jsonPathPattern, eur, sale), JSONArray.class).get(0);
+                Double eurBuy = (Double) documentContextToday.read(String.format(jsonPathPattern, eur, buy), JSONArray.class).get(0);
 
-            Double eurSaleYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, eur, sale), JSONArray.class).get(0);
-            Double eurBuyYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, eur, buy), JSONArray.class).get(0);
+                Double rubSale = (Double) documentContextToday.read(String.format(jsonPathPattern, rub, sale), JSONArray.class).get(0);
+                Double rubBuy = (Double) documentContextToday.read(String.format(jsonPathPattern, rub, buy), JSONArray.class).get(0);
 
-            Double rubSaleYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, rub, sale), JSONArray.class).get(0);
-            Double rubBuyYesterday = (Double) documentContextYesterday.read(String.format(jsonPathPattern, rub, buy), JSONArray.class).get(0);
-
-            StringBuilder responseSB = new StringBuilder();
-            responseSB.append(responseToday);
+                StringBuilder responseSB = new StringBuilder();
+                responseSB.append(String.format(responseToday, dateStr));
 
 //        USD
-            responseSB.append(responseUsd);
-            responseSB.append(String.format(responseByu, usdSaleYesterday));
-            responseSB.append(String.format(responseSale, usdBuyYesterday));
+                responseSB.append(responseUsd);
+                responseSB.append(String.format(responseByu, usdSale));
+                responseSB.append(String.format(responseSale, usdBuy));
 
 //        EUR
-            responseSB.append(responseEur);
-            responseSB.append(String.format(responseByu, eurSaleYesterday));
-            responseSB.append(String.format(responseSale, eurBuyYesterday));
+                responseSB.append(responseEur);
+                responseSB.append(String.format(responseByu, eurSale));
+                responseSB.append(String.format(responseSale, eurBuy));
 
-            //        RUB
-            responseSB.append(responseRub);
-            responseSB.append(String.format(responseByu, rubSaleYesterday));
-            responseSB.append(String.format(responseSale, rubBuyYesterday));
+                //        RUB
+                responseSB.append(responseRub);
+                responseSB.append(String.format(responseByu, rubSale));
+                responseSB.append(String.format(responseSale, rubBuy));
 
-            return responseSB.toString();
-        } else {
-            Double usdSaleToday = (Double) documentContextToday.read(String.format(jsonPathPattern, usd, sale), JSONArray.class).get(0);
-            Double usdBuyToday = (Double) documentContextToday.read(String.format(jsonPathPattern, usd, buy), JSONArray.class).get(0);
+                return responseSB.toString();
+            }
 
-            Double eurSaleToday = (Double) documentContextToday.read(String.format(jsonPathPattern, eur, sale), JSONArray.class).get(0);
-            Double eurBuyToday = (Double) documentContextToday.read(String.format(jsonPathPattern, eur, buy), JSONArray.class).get(0);
+            n++;
+        } while (n < 10);
 
-            Double rubSaleToday = (Double) documentContextToday.read(String.format(jsonPathPattern, rub, sale), JSONArray.class).get(0);
-            Double rubBuyToday = (Double) documentContextToday.read(String.format(jsonPathPattern, rub, buy), JSONArray.class).get(0);
-
-            StringBuilder responseSB = new StringBuilder();
-            responseSB.append(responseToday);
-
-//        USD
-            responseSB.append(responseUsd);
-            responseSB.append(String.format(responseByu, usdSaleToday));
-            responseSB.append(String.format(responseSale, usdBuyToday));
-
-//        EUR
-            responseSB.append(responseEur);
-            responseSB.append(String.format(responseByu, eurSaleToday));
-            responseSB.append(String.format(responseSale, eurBuyToday));
-
-            //        RUB
-            responseSB.append(responseRub);
-            responseSB.append(String.format(responseByu, rubSaleToday));
-            responseSB.append(String.format(responseSale, rubBuyToday));
-
-            return responseSB.toString();
-        }
+        return "Вибачте, наразi даннi не доступнi.";
     }
 }
