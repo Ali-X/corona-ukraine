@@ -2,10 +2,7 @@ package ua.ali_x.telegrambot.service.course;
 
 import com.jayway.jsonpath.DocumentContext;
 import net.minidev.json.JSONArray;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ua.ali_x.telegrambot.dao.MessageHistoryDao;
-import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.service.RequestService;
 
 import java.time.LocalDate;
@@ -29,18 +26,9 @@ public class ExchangeArchiveCourseNBU implements CourseService, RequestService {
     private final String responseByu = " купівля: <b>%.2f</b> грн.";
     private final String responseSale = " продаж: <b>%.2f</b> грн.";
 
-    @Autowired
-    private MessageHistoryDao messageHistoryDao;
-
     @Override
     public String getCourse() {
-        MessageHistory courseNBUMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("courseNBU");
-
-        if (courseNBUMessageHistory == null || courseNBUMessageHistory.getMessage() == null) {
-            return extractCourse();
-        } else {
-            return courseNBUMessageHistory.getMessage();
-        }
+        return extractCourse();
     }
 
     private String extractCourse() {

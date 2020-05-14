@@ -7,9 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ua.ali_x.telegrambot.dao.MessageHistoryDao;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
-import ua.ali_x.telegrambot.model.MessageHistory;
 
 import java.io.IOException;
 
@@ -19,17 +17,8 @@ public class StatisticHtmlUkraineService implements StatisticService {
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
-    @Autowired
-    private MessageHistoryDao messageHistoryDao;
-
     public String getStatistics() {
-        MessageHistory statisticMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
-
-        if (statisticMessageHistory == null || statisticMessageHistory.getMessage() == null) {
-            return extractStatistic();
-        } else {
-            return statisticMessageHistory.getMessage();
-        }
+        return extractStatistic();
     }
 
     private String extractStatistic() {

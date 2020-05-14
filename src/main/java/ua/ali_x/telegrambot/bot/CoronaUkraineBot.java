@@ -15,9 +15,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ua.ali_x.telegrambot.dao.FeedbackDao;
+import ua.ali_x.telegrambot.dao.MessageHistoryDao;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import ua.ali_x.telegrambot.dao.UserChatDao;
 import ua.ali_x.telegrambot.model.Feedback;
+import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.model.UserChat;
 import ua.ali_x.telegrambot.schedule.SchedulerService;
@@ -109,6 +111,9 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     @Qualifier("oilCourse")
     private CourseService courseOilService;
 
+    @Autowired
+    private MessageHistoryDao messageHistoryDao;
+
     @Value("${botname}")
     private String botname;
 
@@ -182,7 +187,6 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
-
             case QUARANTINE_QUESTION: {
                 getDaysLeftResponseText(response);
                 setMainButtons(response);
@@ -244,17 +248,35 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void getCourseExchangePBText(SendMessage response) {
+        String course;
         sendTypingChatAction(response);
 
+        MessageHistory coursePBMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("coursePB");
+
+        if (coursePBMessageHistory == null || coursePBMessageHistory.getMessage() == null) {
+            course = courseExchangeServicePB.getCourse();
+        } else {
+            course = coursePBMessageHistory.getMessage();
+        }
+
         response.setParseMode("HTML");
-        response.setText(courseExchangeServicePB.getCourse());
+        response.setText(course);
     }
 
     private void getCourseExchangeNBUText(SendMessage response) {
+        String course;
         sendTypingChatAction(response);
 
+        MessageHistory coursePBMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("courseNBU");
+
+        if (coursePBMessageHistory == null || coursePBMessageHistory.getMessage() == null) {
+            course = courseExchangeServiceNBU.getCourse();
+        } else {
+            course = coursePBMessageHistory.getMessage();
+        }
+
         response.setParseMode("HTML");
-        response.setText(courseExchangeServiceNBU.getCourse());
+        response.setText(course);
     }
 
     private void getCourseMetalText(SendMessage response) {
@@ -414,10 +436,18 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
     private void getStatisticsUkraineResponseText(SendMessage response) {
         StringBuilder sb = new StringBuilder();
-        String statistics = statisticHtmlUkraineService.getStatistics();
+        String statistics;
 
-        if (StringUtils.isEmpty(statistics)) {
-            statistics = statisticJsonUkraineService.getStatistics();
+        MessageHistory statisticMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
+
+        if (statisticMessageHistory == null || statisticMessageHistory.getMessage() == null) {
+            statistics = statisticHtmlUkraineService.getStatistics();
+
+            if (StringUtils.isEmpty(statistics)) {
+                statistics = statisticJsonUkraineService.getStatistics();
+            }
+        } else {
+            statistics =  statisticMessageHistory.getMessage();
         }
 
         sb.append(statistics);
