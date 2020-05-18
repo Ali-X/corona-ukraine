@@ -3,6 +3,7 @@ package ua.ali_x.telegrambot.schedule;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.model.Schedule;
 import ua.ali_x.telegrambot.service.ScheduleService;
@@ -12,6 +13,9 @@ import java.util.TimeZone;
 
 @Component
 public class SchedulerService {
+
+    @Value("${job.info.cron}")
+    private String infoCron;
 
     @Autowired
     private ScheduleService scheduleService;
@@ -44,7 +48,7 @@ public class SchedulerService {
             CronTrigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity("infoCollectorTrigger", "infoCollector")
                     .startNow()
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 7,12,22 ? * * *").inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
+                    .withSchedule(CronScheduleBuilder.cronSchedule(infoCron).inTimeZone(TimeZone.getTimeZone("Europe/Kiev")))
                     .forJob(jobName, "infoCollector")
                     .build();
 
