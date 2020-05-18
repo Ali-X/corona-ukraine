@@ -48,10 +48,9 @@ public class StatisticJob implements Job {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         long chatId = jobDataMap.getLong("chatId");
-        String daysLeftMsg = instance.quarantineService.getDaysLeftMessage();
         MessageHistory history = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
         String statistics;
-        int counter = 10;
+        int counter = 15;
 
         do {
             statistics = instance.statisticHtmlUkraineService.getStatistics();
@@ -91,7 +90,6 @@ public class StatisticJob implements Job {
         } while (counter > 0);
 
         instance.telegramService.sendMessage(chatId, statistics, instance.token);
-        instance.telegramService.sendMessage(chatId, daysLeftMsg, instance.token);
 
         System.out.println("Job " + jobDataMap.getString("jobName") + " is executed");
     }
