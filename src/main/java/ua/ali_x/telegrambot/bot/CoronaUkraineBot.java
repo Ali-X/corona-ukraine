@@ -45,6 +45,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     public static final String STATISTIC_QUESTION_WORLD = "Статистика в світі";
     public static final String QUARANTINE_QUESTION = "Коли закінчиться карантин?";
     public static final String FEEDBACK_QUESTION = "Залишити відгук";
+    public static final String SETTINGS_QUESTION = "Налаштування";
+    public static final String DISABLE_NOTIFICATION = "Відключити сповіщення";
+    public static final String DISABLED_NOTIFICATION = "Сповіщення відключені";
+    public static final String ENABLE_NOTIFICATION = "Включити сповіщення";
+    public static final String ENABLED_NOTIFICATION = "Сповіщення включені";
     public static final String CHOOSE_MENU_QUESTION = "Оберіть пункт меню.";
     public static final String COURSE_QUESTION = "Курс";
     public static final String COURSE_QUESTION_EXCHANGE = "Курс валют";
@@ -197,6 +202,11 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
+            case SETTINGS_QUESTION: {
+                getChooseMenuResponseText(response);
+                setSettingsButtons(response, message);
+                break;
+            }
             case COURSE_QUESTION: {
                 getChooseMenuResponseText(response);
                 setCourseButtons(response);
@@ -232,6 +242,16 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 setMainButtons(response);
                 break;
             }
+            case DISABLE_NOTIFICATION: {
+                getDisableNotificationText(response, message);
+                setMainButtons(response);
+                break;
+            }
+            case ENABLE_NOTIFICATION: {
+                getEnableNotificationText(response, message);
+                setMainButtons(response);
+                break;
+            }
             default:
                 setMainButtons(response);
                 break;
@@ -245,6 +265,40 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         }
 
         return response;
+    }
+
+    private void getEnableNotificationText(SendMessage response, Message message) {
+        UserChat chat = userChatDao.findFirstByChatId(message.getChatId());
+
+        if (chat != null && chat.getSchedule() != null) {
+            scheduleService.initStatisticJob(message.getChatId(), chat.getSchedule().getCron());
+
+            chat.getSchedule().setEnabled(Boolean.TRUE);
+            userChatDao.save(chat);
+
+            response.setText(ENABLED_NOTIFICATION);
+            return;
+        }
+
+        response.setText(ERROR_QUESTION);
+    }
+
+    private void getDisableNotificationText(SendMessage response, Message message) {
+        UserChat chat = userChatDao.findFirstByChatId(message.getChatId());
+
+        if (chat != null && chat.getSchedule() != null) {
+            boolean result = scheduleService.deleteStatisticJob(message.getChatId());
+
+            if (result) {
+                chat.getSchedule().setEnabled(Boolean.FALSE);
+                userChatDao.save(chat);
+
+                response.setText(DISABLED_NOTIFICATION);
+                return;
+            }
+        }
+
+        response.setText(ERROR_QUESTION);
     }
 
     private void getCourseExchangePBText(SendMessage response) {
@@ -343,7 +397,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
 
         KeyboardRow keyboardSecondRow = new KeyboardRow();
         keyboardSecondRow.add(new KeyboardButton(COURSE_QUESTION));
-        keyboardSecondRow.add(new KeyboardButton(FEEDBACK_QUESTION));
+        keyboardSecondRow.add(new KeyboardButton(SETTINGS_QUESTION));
 
         keyboard.add(keyboardFirstRow);
         keyboard.add(keyboardSecondRow);
@@ -363,6 +417,34 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         KeyboardRow keyboardFirstRow = new KeyboardRow();
         keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_UKRAINE));
         keyboardFirstRow.add(new KeyboardButton(STATISTIC_QUESTION_WORLD));
+
+        keyboard.add(keyboardFirstRow);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setSettingsButtons(SendMessage sendMessage, Message message) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(false);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+
+        UserChat userChat = userChatDao.findFirstByChatId(message.getChatId());
+
+        if (userChat != null && userChat.getSchedule() != null) {
+            if (userChat.getSchedule().getEnabled()) {
+                keyboardFirstRow.add(new KeyboardButton(DISABLE_NOTIFICATION));
+            } else {
+                keyboardFirstRow.add(new KeyboardButton(ENABLE_NOTIFICATION));
+            }
+        }
+
+        keyboardFirstRow.add(new KeyboardButton(FEEDBACK_QUESTION));
 
         keyboard.add(keyboardFirstRow);
 
@@ -447,7 +529,7 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
                 statistics = statisticJsonUkraineService.getStatistics();
             }
         } else {
-            statistics =  statisticMessageHistory.getMessage();
+            statistics = statisticMessageHistory.getMessage();
         }
 
         sb.append(statistics);

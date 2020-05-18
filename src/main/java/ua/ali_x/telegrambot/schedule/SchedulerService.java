@@ -34,6 +34,26 @@ public class SchedulerService {
     public void initSchedulers() {
         initStatisticSchedulers();
         initMessageHistorySchedulers();
+
+        try {
+            scheduler.start();
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean deleteJob(String jobName, String groupName) {
+        try {
+            return scheduler.deleteJob(new JobKey(jobName, groupName));
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean deleteStatisticJob(long chatId) {
+        return deleteJob("statisticJob_" + chatId, "statistic");
     }
 
     private void initMessageHistorySchedulers() {
@@ -62,20 +82,13 @@ public class SchedulerService {
     }
 
     private void initStatisticSchedulers() {
-        try {
-            List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
+        List<Schedule> allEnabledUser = scheduleService.getAllEnabledUser();
 
-            allEnabledUser.forEach(schedule -> {
-                if (schedule.getUserChat() != null) {
-                    initStatisticJob(schedule.getUserChat().getChatId(), schedule.getCron());
-                }
-            });
-
-
-            scheduler.start();
-        } catch (SchedulerException ex) {
-            ex.printStackTrace();
-        }
+        allEnabledUser.forEach(schedule -> {
+            if (schedule.getUserChat() != null) {
+                initStatisticJob(schedule.getUserChat().getChatId(), schedule.getCron());
+            }
+        });
     }
 
     public void initStatisticJob(long chatId, String cron) {
