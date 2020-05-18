@@ -10,12 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageHistoryDao;
 import ua.ali_x.telegrambot.model.MessageHistory;
-import ua.ali_x.telegrambot.service.QuarantineService;
 import ua.ali_x.telegrambot.service.TelegramService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
+import ua.ali_x.telegrambot.utils.DateUtils;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Component
 public class StatisticJob implements Job {
@@ -30,9 +29,9 @@ public class StatisticJob implements Job {
     @Autowired
     private TelegramService telegramService;
     @Autowired
-    private QuarantineService quarantineService;
-    @Autowired
     private MessageHistoryDao messageHistoryDao;
+    @Autowired
+    private DateUtils dateUtils;
 
     @Value("${token}")
     private String token;
@@ -59,34 +58,34 @@ public class StatisticJob implements Job {
                 statistics = instance.statisticJsonUkraineService.getStatistics();
             }
 
-                if (history == null) {
-                    MessageHistory newHistory = new MessageHistory();
-                    newHistory.setDate(new Date());
-                    newHistory.setMessage(statistics);
-                    newHistory.setType("statistic");
-                    instance.messageHistoryDao.save(newHistory);
+            if (history == null) {
+                MessageHistory newHistory = new MessageHistory();
+                newHistory.setDate(instance.dateUtils.getNow());
+                newHistory.setMessage(statistics);
+                newHistory.setType("statistic");
+                instance.messageHistoryDao.save(newHistory);
 
-                    break;
-                } else if (formatter.format(history.getDate()).equals(formatter.format(new Date()))) {
-                    break;
-                } else if (history.getMessage().equals(statistics)) {
-                    counter--;
+                break;
+            } else if (formatter.format(history.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
+                break;
+            } else if (history.getMessage().equals(statistics)) {
+                counter--;
 
-                    try {
-                        Thread.sleep(300000); // 5min
+                try {
+                    Thread.sleep(300000); // 5min
 //                    Thread.sleep(5000); // 5 sec
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else if (!history.getMessage().equals(statistics)) {
-                    MessageHistory newHistory = new MessageHistory();
-                    newHistory.setDate(new Date());
-                    newHistory.setMessage(statistics);
-                    newHistory.setType("statistic");
-                    instance.messageHistoryDao.save(newHistory);
-
-                    break;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+            } else if (!history.getMessage().equals(statistics)) {
+                MessageHistory newHistory = new MessageHistory();
+                newHistory.setDate(instance.dateUtils.getNow());
+                newHistory.setMessage(statistics);
+                newHistory.setType("statistic");
+                instance.messageHistoryDao.save(newHistory);
+
+                break;
+            }
         } while (counter > 0);
 
         instance.telegramService.sendMessage(chatId, statistics, instance.token);

@@ -11,8 +11,7 @@ import ua.ali_x.telegrambot.dao.MessageHistoryDao;
 import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.service.course.CourseService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
-
-import java.util.Date;
+import ua.ali_x.telegrambot.utils.DateUtils;
 
 @Component
 public class InfoCollectorJob implements Job {
@@ -33,6 +32,9 @@ public class InfoCollectorJob implements Job {
     @Autowired
     @Qualifier("statisticHtmlUkraineService")
     private StatisticService statisticServiceUA;
+
+    @Autowired
+    private DateUtils dateUtils;
 
     public InfoCollectorJob() {
         if (instance == null) {
@@ -57,7 +59,7 @@ public class InfoCollectorJob implements Job {
 
         if (history == null || !StringUtils.equals(history.getMessage(), statistics)) {
             MessageHistory newHistory = new MessageHistory();
-            newHistory.setDate(new Date());
+            newHistory.setDate(instance.dateUtils.getNow());
             newHistory.setMessage(statistics);
             newHistory.setType("statistic");
             instance.messageHistoryDao.save(newHistory);
@@ -70,7 +72,7 @@ public class InfoCollectorJob implements Job {
 
         if (history == null || !StringUtils.equals(history.getMessage(), course)) {
             MessageHistory newHistory = new MessageHistory();
-            newHistory.setDate(new Date());
+            newHistory.setDate(instance.dateUtils.getNow());
             newHistory.setMessage(course);
             newHistory.setType("courseNBU");
             instance.messageHistoryDao.save(newHistory);
@@ -83,7 +85,7 @@ public class InfoCollectorJob implements Job {
 
         if (history == null || !StringUtils.equals(history.getMessage(), course)) {
             MessageHistory newHistory = new MessageHistory();
-            newHistory.setDate(new Date());
+            newHistory.setDate(instance.dateUtils.getNow());
             newHistory.setMessage(course);
             newHistory.setType("coursePB");
             instance.messageHistoryDao.save(newHistory);
