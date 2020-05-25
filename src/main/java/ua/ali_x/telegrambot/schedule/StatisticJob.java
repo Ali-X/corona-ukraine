@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageHistoryDao;
+import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.dao.StatisticDao;
 import ua.ali_x.telegrambot.model.MessageHistory;
+import ua.ali_x.telegrambot.model.Statistic;
 import ua.ali_x.telegrambot.service.TelegramService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
 import ua.ali_x.telegrambot.utils.DateUtils;
@@ -20,6 +23,7 @@ import java.text.SimpleDateFormat;
 public class StatisticJob implements Job {
 
     public static StatisticJob instance;
+    private final String smileUp = "\uD83D\uDD3A";
     @Autowired
     @Qualifier("statisticJsonUkraineService")
     private StatisticService statisticJsonUkraineService;
@@ -32,6 +36,10 @@ public class StatisticJob implements Job {
     private MessageHistoryDao messageHistoryDao;
     @Autowired
     private DateUtils dateUtils;
+    @Autowired
+    private StatisticDao statisticDao;
+    @Autowired
+    private MessageTemplateDao messageTemplateDao;
 
     @Value("${token}")
     private String token;
@@ -44,31 +52,35 @@ public class StatisticJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
+        String message = instance.messageTemplateDao.findFirstByCode("statistic_ukraine_d_diff").getMessage();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         long chatId = jobDataMap.getLong("chatId");
-        MessageHistory history = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
-        String statistics;
+        Statistic statisticPrev = instance.statisticDao.findFirstByOrderByDateDesc();
+        Statistic statistics;
+        String statisticsStr = StringUtils.EMPTY;
         int counter = 15;
 
         do {
-            statistics = instance.statisticHtmlUkraineService.getStatisticsStr();
+            statistics = instance.statisticHtmlUkraineService.getStatistics();
 
-            if (StringUtils.isEmpty(statistics)) {
-                statistics = instance.statisticJsonUkraineService.getStatisticsStr();
-            }
+            if (statisticPrev == null) {
+                statisticsStr = instance.statisticHtmlUkraineService.getStatisticsStr();
 
-            if (history == null) {
+                instance.statisticDao.save(statistics);
+
                 MessageHistory newHistory = new MessageHistory();
                 newHistory.setDate(instance.dateUtils.getNow());
-                newHistory.setMessage(statistics);
+                newHistory.setMessage(statisticsStr);
                 newHistory.setType("statistic");
+
                 instance.messageHistoryDao.save(newHistory);
 
                 break;
-            } else if (formatter.format(history.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
+            } else if (formatter.format(statisticPrev.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
+                statisticsStr = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic").getMessage();
                 break;
-            } else if (history.getMessage().equals(statistics)) {
+            } else if (statisticPrev.equals(statistics)) {
                 counter--;
 
                 try {
@@ -77,18 +89,23 @@ public class StatisticJob implements Job {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } else if (!history.getMessage().equals(statistics)) {
+            } else if (!statisticPrev.equals(statistics)) {
+                statisticsStr = String.format(message, statistics.getInfected(), smileUp, statistics.getInfected() - statisticPrev.getInfected(), statistics.getRecovered(), smileUp, statistics.getRecovered() - statisticPrev.getRecovered(), statistics.getDeaths(), smileUp, statistics.getDeaths() - statisticPrev.getDeaths());
+
+                instance.statisticDao.save(statistics);
+
                 MessageHistory newHistory = new MessageHistory();
                 newHistory.setDate(instance.dateUtils.getNow());
-                newHistory.setMessage(statistics);
+                newHistory.setMessage(statisticsStr);
                 newHistory.setType("statistic");
+
                 instance.messageHistoryDao.save(newHistory);
 
                 break;
             }
         } while (counter > 0);
 
-        instance.telegramService.sendMessage(chatId, statistics, instance.token);
+        instance.telegramService.sendMessage(chatId, statisticsStr, instance.token);
 
         System.out.println("Job " + jobDataMap.getString("jobName") + " is executed");
     }

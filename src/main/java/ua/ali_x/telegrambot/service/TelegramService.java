@@ -23,7 +23,8 @@ public class TelegramService {
                     .fromUri("https://api.telegram.org")
                     .path("/{token}/sendMessage")
                     .queryParam("chat_id", chatId)
-                    .queryParam("text", message);
+                    .queryParam("text", message)
+                    .queryParam("parse_mode", "html");
 
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
