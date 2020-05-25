@@ -6,6 +6,7 @@ import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.model.Statistic;
 import ua.ali_x.telegrambot.service.RequestService;
 import ua.ali_x.telegrambot.service.TranslationService;
 
@@ -24,7 +25,7 @@ public class StatisticJsonWorldService implements StatisticService, RequestServi
     @Autowired
     private TranslationService translationService;
 
-    public String getStatistics() {
+    public String getStatisticsStr() {
         StringBuilder stringBuilder = new StringBuilder();
         String message = messageTemplateDao.findFirstByCode("statistic_world_d").getMessage();
         String messageAll = messageTemplateDao.findFirstByCode("statistic_all_world_s").getMessage();
@@ -62,6 +63,11 @@ public class StatisticJsonWorldService implements StatisticService, RequestServi
         stringBuilder.append(String.format(messageAll, totalCases.toString(), totalRecovered.toString(), totalDeath.toString()));
 
         return stringBuilder.toString();
+    }
+
+    @Override
+    public Statistic getStatistics() {
+        return null;
     }
 
     private Integer parseValue(Object valueObj) {

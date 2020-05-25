@@ -8,23 +8,32 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.model.Statistic;
+import ua.ali_x.telegrambot.utils.DateUtils;
 
 import java.io.IOException;
 
 @Component
 public class StatisticHtmlUkraineService implements StatisticService {
+    @Autowired
+    private DateUtils dateUtils;
 
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
-    public String getStatistics() {
-        return extractStatistic();
+    public String getStatisticsStr() {
+        String message = messageTemplateDao.findFirstByCode("statistic_ukraine_d").getMessage();
+        Statistic statistic = getStatistics();
+
+        if (statistic.getInfected() == null) {
+            return StringUtils.EMPTY;
+        }
+
+        return String.format(message, statistic.getInfected(), statistic.getRecovered(), statistic.getDeaths());
     }
 
-    private String extractStatistic() {
+    public Statistic getStatistics() {
         try {
-            String message = messageTemplateDao.findFirstByCode("statistic_ukraine_s").getMessage();
-
             String recovered = "";
             String death = "";
             String infected = "";
@@ -58,13 +67,13 @@ public class StatisticHtmlUkraineService implements StatisticService {
             if (StringUtils.isEmpty(recovered)
                     || StringUtils.isEmpty(death)
                     || StringUtils.isEmpty(infected)) {
-                return StringUtils.EMPTY;
+                return new Statistic();
             }
 
-            return String.format(message, infected, recovered, death);
+            return new Statistic(Integer.valueOf(infected.replaceAll("\\s+", "")), Integer.valueOf(recovered.replaceAll("\\s+", "")), Integer.valueOf(death.replaceAll("\\s+", "")), dateUtils.getNow());
         } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
-            return StringUtils.EMPTY;
+            return new Statistic();
         }
     }
 }

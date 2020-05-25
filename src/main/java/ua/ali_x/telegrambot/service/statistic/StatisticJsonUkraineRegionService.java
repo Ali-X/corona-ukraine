@@ -6,6 +6,7 @@ import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.model.Statistic;
 import ua.ali_x.telegrambot.service.RequestService;
 import ua.ali_x.telegrambot.service.TranslationService;
 
@@ -24,7 +25,7 @@ public class StatisticJsonUkraineRegionService implements StatisticService, Requ
     private MessageTemplateDao messageTemplateDao;
 
     @Override
-    public String getStatistics() {
+    public String getStatisticsStr() {
         StringBuilder stringBuilder = new StringBuilder();
         String message = messageTemplateDao.findFirstByCode("statistic_region_d").getMessage();
 
@@ -48,6 +49,11 @@ public class StatisticJsonUkraineRegionService implements StatisticService, Requ
         });
 
         return stringBuilder.toString();
+    }
+
+    @Override
+    public Statistic getStatistics() {
+        return null;
     }
 
     private Integer parseValue(Object valueObj) {

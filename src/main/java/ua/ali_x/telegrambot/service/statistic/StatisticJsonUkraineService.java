@@ -5,6 +5,7 @@ import net.minidev.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageTemplateDao;
+import ua.ali_x.telegrambot.model.Statistic;
 import ua.ali_x.telegrambot.service.RequestService;
 
 @Component
@@ -13,8 +14,13 @@ public class StatisticJsonUkraineService implements StatisticService, RequestSer
     @Autowired
     private MessageTemplateDao messageTemplateDao;
 
-    public String getStatistics() {
+    public String getStatisticsStr() {
         return extractStatistic();
+    }
+
+    @Override
+    public Statistic getStatistics() {
+        return null;
     }
 
     private String extractStatistic() {

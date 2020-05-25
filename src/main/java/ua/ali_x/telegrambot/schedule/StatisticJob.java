@@ -52,10 +52,10 @@ public class StatisticJob implements Job {
         int counter = 15;
 
         do {
-            statistics = instance.statisticHtmlUkraineService.getStatistics();
+            statistics = instance.statisticHtmlUkraineService.getStatisticsStr();
 
             if (StringUtils.isEmpty(statistics)) {
-                statistics = instance.statisticJsonUkraineService.getStatistics();
+                statistics = instance.statisticJsonUkraineService.getStatisticsStr();
             }
 
             if (history == null) {

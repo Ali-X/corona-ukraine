@@ -523,10 +523,10 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
         MessageHistory statisticMessageHistory = messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic");
 
         if (statisticMessageHistory == null || statisticMessageHistory.getMessage() == null) {
-            statistics = statisticHtmlUkraineService.getStatistics();
+            statistics = statisticHtmlUkraineService.getStatisticsStr();
 
             if (StringUtils.isEmpty(statistics)) {
-                statistics = statisticJsonUkraineService.getStatistics();
+                statistics = statisticJsonUkraineService.getStatisticsStr();
             }
         } else {
             statistics = statisticMessageHistory.getMessage();
@@ -539,14 +539,14 @@ public class CoronaUkraineBot extends TelegramLongPollingBot {
     }
 
     private void getStatisticsUkraineRegionsResponseText(SendMessage response) {
-        String regionStatistic = statisticJsonUkraineRegionService.getStatistics();
+        String regionStatistic = statisticJsonUkraineRegionService.getStatisticsStr();
 
         response.setParseMode("HTML");
         response.setText(regionStatistic);
     }
 
     private void getStatisticsWorldResponseText(SendMessage response) {
-        String statistics = statisticJsonWorldService.getStatistics();
+        String statistics = statisticJsonWorldService.getStatisticsStr();
 
         response.setParseMode("HTML");
         response.setText(statistics);
