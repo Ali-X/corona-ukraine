@@ -1,2 +1,2 @@
 insert into message_template
-values (11, 'statistic_ukraine_d_diff', 'В Україні зареєстровано %d заражених людей (\uD83D\uDCC8 +%d), з яких %d одужали (\uD83D\uDCC8 +%d), а %d померло (\uD83D\uDCC8 +%d).');
+values (11, 'statistic_ukraine_d_diff', 'В Україні зареєстровано <b>%d</b> заражених людей (%s <b>+%d</b>), з яких <b>%d</b> одужали (%s +<b>%d</b>), а <b>%d</b> померло (%s <b>+%d</b>).');
