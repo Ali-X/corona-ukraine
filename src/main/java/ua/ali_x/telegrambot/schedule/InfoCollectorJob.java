@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageHistoryDao;
-import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import ua.ali_x.telegrambot.dao.StatisticDao;
 import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.model.Statistic;
@@ -20,7 +19,7 @@ import ua.ali_x.telegrambot.utils.DateUtils;
 public class InfoCollectorJob implements Job {
 
     public static InfoCollectorJob instance;
-    private final String smileUp = "\uD83D\uDD3A";
+
     @Autowired
     private MessageHistoryDao messageHistoryDao;
     @Autowired
@@ -30,14 +29,12 @@ public class InfoCollectorJob implements Job {
     @Qualifier("exchangeCoursePB")
     private CourseService courseServicePB;
     @Autowired
-    @Qualifier("statisticHtmlUkraineService")
-    private StatisticService statisticServiceUA;
+    @Qualifier("statisticHtmlUkrainePrettierService")
+    private StatisticService statisticServiceUAPrettier;
     @Autowired
     private StatisticDao statisticDao;
     @Autowired
     private DateUtils dateUtils;
-    @Autowired
-    private MessageTemplateDao messageTemplateDao;
 
     public InfoCollectorJob() {
         if (instance == null) {
@@ -57,28 +54,17 @@ public class InfoCollectorJob implements Job {
     }
 
     private void extractStatisticUA() {
-        String message = instance.messageTemplateDao.findFirstByCode("statistic_ukraine_d_diff").getMessage();
-        Statistic statistics = instance.statisticServiceUA.getStatistics();
+        Statistic statistics = instance.statisticServiceUAPrettier.getStatistics();
         Statistic statisticPrev = instance.statisticDao.findFirstByOrderByDateDesc();
 
-        if (statisticPrev == null) {
-            instance.statisticDao.save(statistics);
-
+        if (!statistics.equals(statisticPrev)) {
             MessageHistory newHistory = new MessageHistory();
             newHistory.setDate(instance.dateUtils.getNow());
-            newHistory.setMessage(instance.statisticServiceUA.getStatisticsStr());
+            newHistory.setMessage(instance.statisticServiceUAPrettier.getStatisticsStr());
             newHistory.setType("statistic");
 
             instance.messageHistoryDao.save(newHistory);
-        } else if (!statisticPrev.equals(statistics)) {
             instance.statisticDao.save(statistics);
-
-            MessageHistory newHistory = new MessageHistory();
-            newHistory.setDate(instance.dateUtils.getNow());
-            newHistory.setMessage(String.format(message, statistics.getInfected(), smileUp, statistics.getInfected() - statisticPrev.getInfected(), statistics.getRecovered(), smileUp, statistics.getRecovered() - statisticPrev.getRecovered(), statistics.getDeaths(), smileUp, statistics.getDeaths() - statisticPrev.getDeaths()));
-            newHistory.setType("statistic");
-
-            instance.messageHistoryDao.save(newHistory);
         }
     }
 
