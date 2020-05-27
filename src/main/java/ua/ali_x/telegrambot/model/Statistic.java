@@ -22,7 +22,7 @@ public class Statistic {
     private Integer recovered;
     private Date date;
 
-    public Statistic(Integer infected, Integer deaths, Integer recovered, Date date) {
+    public Statistic(Integer infected, Integer recovered, Integer deaths,  Date date) {
         this.infected = infected;
         this.deaths = deaths;
         this.recovered = recovered;
