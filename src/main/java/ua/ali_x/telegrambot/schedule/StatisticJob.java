@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ua.ali_x.telegrambot.dao.MessageHistoryDao;
-import ua.ali_x.telegrambot.dao.MessageTemplateDao;
 import ua.ali_x.telegrambot.dao.StatisticDao;
 import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.model.Statistic;
@@ -23,10 +22,6 @@ import java.text.SimpleDateFormat;
 public class StatisticJob implements Job {
 
     public static StatisticJob instance;
-    private final String smileUp = "\uD83D\uDD3A";
-    @Autowired
-    @Qualifier("statisticJsonUkraineService")
-    private StatisticService statisticJsonUkraineService;
     @Autowired
     @Qualifier("statisticHtmlUkraineService")
     private StatisticService statisticHtmlUkraineService;
@@ -39,7 +34,8 @@ public class StatisticJob implements Job {
     @Autowired
     private StatisticDao statisticDao;
     @Autowired
-    private MessageTemplateDao messageTemplateDao;
+    @Qualifier("statisticHtmlUkrainePrettierService")
+    private StatisticService statisticServiceUAPrettier;
 
     @Value("${token}")
     private String token;
@@ -52,7 +48,6 @@ public class StatisticJob implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
-        String message = instance.messageTemplateDao.findFirstByCode("statistic_ukraine_d_diff").getMessage();
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         long chatId = jobDataMap.getLong("chatId");
@@ -64,10 +59,11 @@ public class StatisticJob implements Job {
         do {
             statistics = instance.statisticHtmlUkraineService.getStatistics();
 
-            if (statisticPrev == null) {
-                statisticsStr = instance.statisticHtmlUkraineService.getStatisticsStr();
-
-                instance.statisticDao.save(statistics);
+            if (statisticPrev != null && formatter.format(statisticPrev.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
+                statisticsStr = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic").getMessage();
+                break;
+            } else if (!statistics.equals(statisticPrev)) {
+                statisticsStr = instance.statisticServiceUAPrettier.getStatisticsStr();
 
                 MessageHistory newHistory = new MessageHistory();
                 newHistory.setDate(instance.dateUtils.getNow());
@@ -75,12 +71,9 @@ public class StatisticJob implements Job {
                 newHistory.setType("statistic");
 
                 instance.messageHistoryDao.save(newHistory);
-
+                instance.statisticDao.save(statistics);
                 break;
-            } else if (formatter.format(statisticPrev.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
-                statisticsStr = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic").getMessage();
-                break;
-            } else if (statisticPrev.equals(statistics)) {
+            } else {
                 counter--;
 
                 try {
@@ -89,19 +82,6 @@ public class StatisticJob implements Job {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-            } else if (!statisticPrev.equals(statistics)) {
-                statisticsStr = String.format(message, statistics.getInfected(), smileUp, statistics.getInfected() - statisticPrev.getInfected(), statistics.getRecovered(), smileUp, statistics.getRecovered() - statisticPrev.getRecovered(), statistics.getDeaths(), smileUp, statistics.getDeaths() - statisticPrev.getDeaths());
-
-                instance.statisticDao.save(statistics);
-
-                MessageHistory newHistory = new MessageHistory();
-                newHistory.setDate(instance.dateUtils.getNow());
-                newHistory.setMessage(statisticsStr);
-                newHistory.setType("statistic");
-
-                instance.messageHistoryDao.save(newHistory);
-
-                break;
             }
         } while (counter > 0);
 
