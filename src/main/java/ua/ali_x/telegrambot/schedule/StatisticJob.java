@@ -14,6 +14,7 @@ import ua.ali_x.telegrambot.model.MessageHistory;
 import ua.ali_x.telegrambot.model.Statistic;
 import ua.ali_x.telegrambot.service.TelegramService;
 import ua.ali_x.telegrambot.service.statistic.StatisticService;
+import ua.ali_x.telegrambot.service.statistic.StatisticUkrainePrettier;
 import ua.ali_x.telegrambot.utils.DateUtils;
 
 import java.text.SimpleDateFormat;
@@ -34,8 +35,7 @@ public class StatisticJob implements Job {
     @Autowired
     private StatisticDao statisticDao;
     @Autowired
-    @Qualifier("statisticHtmlUkrainePrettierService")
-    private StatisticService statisticServiceUAPrettier;
+    private StatisticUkrainePrettier statisticUkrainePrettier;
 
     @Value("${token}")
     private String token;
@@ -51,19 +51,18 @@ public class StatisticJob implements Job {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         JobDataMap jobDataMap = jobExecutionContext.getMergedJobDataMap();
         long chatId = jobDataMap.getLong("chatId");
-        Statistic statisticPrev = instance.statisticDao.findFirstByOrderByDateDesc();
-        Statistic statistics;
         String statisticsStr = StringUtils.EMPTY;
         int counter = 15;
 
         do {
-            statistics = instance.statisticHtmlUkraineService.getStatistics();
+            Statistic statistics = instance.statisticHtmlUkraineService.getStatistics();
+            Statistic statisticPrev = instance.statisticDao.findFirstByOrderByDateDesc();
 
             if (statisticPrev != null && formatter.format(statisticPrev.getDate()).equals(formatter.format(instance.dateUtils.getNow()))) {
                 statisticsStr = instance.messageHistoryDao.findFirstByTypeOrderByDateDesc("statistic").getMessage();
                 break;
             } else if (!statistics.equals(statisticPrev)) {
-                statisticsStr = instance.statisticServiceUAPrettier.getStatisticsStr();
+                statisticsStr = instance.statisticUkrainePrettier.beautifyStatistics(statistics, statisticPrev);
 
                 MessageHistory newHistory = new MessageHistory();
                 newHistory.setDate(instance.dateUtils.getNow());
